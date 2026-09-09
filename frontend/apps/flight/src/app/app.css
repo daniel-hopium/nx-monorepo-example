@@ -1,0 +1,37 @@
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+.side-menu {
+  background: #24292f;
+  color: #fff;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.side-menu h1 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem;
+}
+
+.side-menu a {
+  color: #d0d7de;
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.side-menu a.active,
+.side-menu a:hover {
+  background: #57606a;
+  color: #fff;
+}
+
+.content {
+  padding: 1.5rem;
+  background: #f6f8fa;
+}

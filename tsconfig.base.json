@@ -1,0 +1,37 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "bundler",
+    "module": "preserve",
+    "target": "es2022",
+    "lib": [
+      "es2022",
+      "dom"
+    ],
+    "importHelpers": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "paths": {
+      "@monorepo/shared-util": [
+        "./frontend/libs/shared/util/src/index.ts"
+      ],
+      "@monorepo/flight-domain": [
+        "./frontend/libs/flight/domain/src/index.ts"
+      ],
+      "@monorepo/flight-ui-blocks": [
+        "./frontend/libs/flight/ui-blocks/src/index.ts"
+      ],
+      "@monorepo/flight-feature-next-flights": [
+        "./frontend/libs/flight/feature-next-flights/src/index.ts"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
+}

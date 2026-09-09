@@ -1,0 +1,12 @@
+<article class="flight-card">
+  <header>
+    <span class="route">{{ flight().from }} → {{ flight().to }}</span>
+    <span class="id">#{{ flight().id }}</span>
+  </header>
+  <p class="date">{{ flight().date | date: 'dd.MM.yyyy HH:mm' }}</p>
+  @if (flight().delay; as delay) {
+    <p class="delay">Verspätung: {{ delay }} min</p>
+  } @else {
+    <p class="on-time">Pünktlich</p>
+  }
+</article>

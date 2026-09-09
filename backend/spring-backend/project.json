@@ -1,0 +1,32 @@
+{
+  "name": "spring-backend",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "backend/spring-backend/src",
+  "tags": ["type:app", "domain:flight"],
+  "targets": {
+    "serve": {
+      "continuous": true,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw spring-boot:run",
+        "cwd": "backend/spring-backend"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/target"],
+      "options": {
+        "command": "./mvnw -q package -DskipTests",
+        "cwd": "backend/spring-backend"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./mvnw test",
+        "cwd": "backend/spring-backend"
+      }
+    }
+  }
+}

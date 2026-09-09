@@ -1,0 +1,17 @@
+<section>
+  <h2>Nächste Flüge</h2>
+
+  @if (flights.isLoading()) {
+    <p>Lade Flüge…</p>
+  } @else if (flights.error()) {
+    <p class="error">Flüge konnten nicht geladen werden. Läuft das Mock-Backend?</p>
+  } @else {
+    <div class="grid">
+      @for (flight of flights.value(); track flight.id) {
+        <lib-flight-card [flight]="flight" />
+      } @empty {
+        <p>Keine Flüge gefunden.</p>
+      }
+    </div>
+  }
+</section>

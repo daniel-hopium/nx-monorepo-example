@@ -1,0 +1,21 @@
+{
+  "name": "flight-domain",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "frontend/libs/flight/domain/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": ["type:domain", "domain:flight"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "frontend/libs/flight/domain/jest.config.cts",
+        "tsConfig": "frontend/libs/flight/domain/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

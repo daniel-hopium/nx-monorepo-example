@@ -1,0 +1,82 @@
+{
+  "name": "flight",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "frontend/apps/flight/src",
+  "tags": ["type:app", "domain:flight"],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/frontend/apps/flight",
+        "browser": "frontend/apps/flight/src/main.ts",
+        "tsConfig": "frontend/apps/flight/tsconfig.app.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "frontend/apps/flight/public"
+          }
+        ],
+        "styles": ["frontend/apps/flight/src/styles.css"]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "configurations": {
+        "production": {
+          "buildTarget": "flight:build:production"
+        },
+        "development": {
+          "buildTarget": "flight:build:development"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "frontend/apps/flight/jest.config.cts",
+        "tsConfig": "frontend/apps/flight/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "flight:build",
+        "staticFilePath": "dist/frontend/apps/flight/browser",
+        "spa": true
+      }
+    }
+  }
+}
