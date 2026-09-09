@@ -25,19 +25,27 @@ export type Initiative = {
   archiviert: boolean;
 };
 
+/** Vollständiger Datensatz für die Detailseite: Zeile + Metadaten + alle Felder. */
+export type InitiativeDetail = Initiative & {
+  erstelltVon: string;
+  erstelltAm: string;
+  aktualisiertAm: string;
+  details: Partial<CreateInitiativeDto>;
+};
+
 /* ---------- Formular "Initiative erstellen", in fünf Abschnitte gegliedert ---------- */
 
 export type Stammdaten = {
   name: string;
-  kurzbeschreibung: string;
+  kurztitel: string;
+  initiativenId: string;
+  konzernunternehmen: string;
+  typ: string;
+  interneKooperation: string;
   manager: string;
-  bereich: string;
+  auftraggeber: string;
   startdatum: string;
   enddatum: string;
-  sponsor: string;
-  kategorie: string;
-  ziel: string;
-  beteiligteEinheiten: string;
 };
 
 export type StatusDerInitiative = {
@@ -75,18 +83,20 @@ export type CreateInitiativeDto = {
   weitere: Weitere;
 };
 
+export type SectionKey = keyof CreateInitiativeDto;
+
 export const initialCreateInitiativeDto: CreateInitiativeDto = {
   stammdaten: {
     name: '',
-    kurzbeschreibung: '',
+    kurztitel: '',
+    initiativenId: '',
+    konzernunternehmen: '',
+    typ: '',
+    interneKooperation: '',
     manager: '',
-    bereich: '',
+    auftraggeber: '',
     startdatum: '',
     enddatum: '',
-    sponsor: '',
-    kategorie: '',
-    ziel: '',
-    beteiligteEinheiten: '',
   },
   status: {
     phase: '',
@@ -113,6 +123,43 @@ export const initialCreateInitiativeDto: CreateInitiativeDto = {
   },
 };
 
+/** Anzeigetexte der Abschnitte und Felder, einmal zentral für Formular, Zusammenfassung und Detailseite. */
+export const SECTION_TITLES: Record<SectionKey, string> = {
+  stammdaten: 'Stammdaten',
+  status: 'Status der Initiative',
+  budget: 'Budget',
+  gruppenstrategie: 'Gruppenstrategie',
+  weitere: 'Weitere / Diverse',
+};
+
+export const FIELD_LABELS: Record<string, string> = {
+  name: 'Name der Initiative',
+  kurztitel: 'Kurztitel',
+  initiativenId: 'Initiativen-ID',
+  konzernunternehmen: 'Konzernunternehmen im Lead',
+  typ: 'Typ der Initiative',
+  interneKooperation: 'Interne Kooperation (optional)',
+  manager: 'Initiativen-Manager*in',
+  auftraggeber: 'Auftraggeber*in intern/extern',
+  startdatum: 'Startdatum',
+  enddatum: 'Enddatum',
+  phase: 'Phase',
+  gesamtstatus: 'Gesamtstatus',
+  freigabe: 'Freigabe',
+  statusKommentar: 'Status-Kommentar',
+  reportingBis: 'Zu reporten bis',
+  gesamtbudget: 'Gesamtbudget (EUR)',
+  budgetJahr: 'Budget laufendes Jahr (EUR)',
+  verbraucht: 'Bisher verbraucht (EUR)',
+  finanzierungsquelle: 'Finanzierungsquelle',
+  strategischesZiel: 'Strategisches Ziel',
+  beitrag: 'Beitrag zur Gruppenstrategie',
+  kpi: 'KPI',
+  risiken: 'Risiken',
+  abhaengigkeiten: 'Abhängigkeiten',
+  notizen: 'Notizen',
+};
+
 /** Validierungsregeln (Signal Forms). Nur der Name ist Pflicht. */
 export const CREATE_INITIATIVE_SCHEMA = schema<CreateInitiativeDto>((dto) => {
   required(dto.stammdaten.name, { message: 'Name ist ein Pflichtfeld' });
@@ -123,4 +170,18 @@ export function countFilled(section: Record<string, unknown>): number {
   return Object.values(section).filter(
     (v) => v !== '' && v !== null && v !== undefined
   ).length;
+}
+
+/**
+ * Baut aus einem Detail-Datensatz wieder das Formular-Modell. Fehlende
+ * Felder werden mit Initialwerten aufgefüllt, damit das Formular vollständig ist.
+ */
+export function toCreateInitiativeDto(detail: InitiativeDetail): CreateInitiativeDto {
+  const base = structuredClone(initialCreateInitiativeDto);
+  for (const key of Object.keys(base) as SectionKey[]) {
+    Object.assign(base[key], detail.details[key] ?? {});
+  }
+  base.stammdaten.name = base.stammdaten.name || detail.name;
+  base.stammdaten.manager = base.stammdaten.manager || detail.manager;
+  return base;
 }

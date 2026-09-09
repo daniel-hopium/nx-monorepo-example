@@ -1,0 +1,53 @@
+<section class="card">
+  @if (initiative.isLoading()) {
+    <p>Lade Initiative…</p>
+  } @else if (initiative.error()) {
+    <p class="error">Initiative konnte nicht geladen werden.</p>
+  } @else if (initiative.value(); as detail) {
+    <header class="head">
+      <h1>{{ detail.name }}</h1>
+      <div class="actions">
+        <button type="button" class="btn danger" [disabled]="busy()" (click)="remove()">Löschen</button>
+        <button type="button" class="btn" [disabled]="busy()" (click)="edit()">Bearbeiten</button>
+        <button type="button" class="btn primary" [disabled]="busy() || !canSubmit(detail)" (click)="submit()">
+          Absenden
+        </button>
+      </div>
+    </header>
+
+    @if (actionError()) {
+      <p class="error">Aktion fehlgeschlagen. Läuft das Mock-Backend?</p>
+    }
+
+    <div class="layout">
+      <aside class="meta">
+        <ds-status-badge [variant]="badgeVariant(detail.freigabe)">{{ detail.freigabe }}</ds-status-badge>
+        <p>Erstellt von {{ detail.erstelltVon }}</p>
+        <p>Zuletzt aktualisiert am {{ detail.aktualisiertAm | date: 'd.M.yyyy' }}</p>
+      </aside>
+
+      <div class="sections">
+        @for (section of sections(); track section.key) {
+          <section class="section">
+            <header class="section-head">
+              <h2>{{ section.title }}</h2>
+              <button type="button" class="icon-btn" aria-label="{{ section.title }} bearbeiten" (click)="edit()">✎</button>
+            </header>
+            <dl>
+              @if (section.key === 'stammdaten') {
+                <dt>Eingabedatum</dt>
+                <dd>{{ detail.erstelltAm | date: 'd.M.yyyy' }}</dd>
+                <dt>Aktualisierungsdatum</dt>
+                <dd>{{ detail.aktualisiertAm | date: 'd.M.yyyy' }}</dd>
+              }
+              @for (row of section.rows; track row.label) {
+                <dt>{{ row.label }}</dt>
+                <dd [class.muted]="row.value === 'keine Angabe'">{{ row.value }}</dd>
+              }
+            </dl>
+          </section>
+        }
+      </div>
+    </div>
+  }
+</section>

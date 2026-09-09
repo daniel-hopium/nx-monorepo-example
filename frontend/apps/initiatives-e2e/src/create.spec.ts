@@ -21,8 +21,8 @@ test.describe('Initiative erstellen', () => {
 
   test('Zähler und Titel folgen der Eingabe', async ({ page }) => {
     await page.getByRole('button', { name: /^Stammdaten/ }).click();
-    await page.getByRole('textbox', { name: 'Name' }).fill('E2E Initiative');
-    await page.getByRole('textbox', { name: 'Bereich' }).fill('Netze');
+    await page.getByRole('textbox', { name: 'Name der Initiative' }).fill('E2E Initiative');
+    await page.getByRole('textbox', { name: 'Kurztitel' }).fill('25_WSTW_999');
 
     await expect(page.getByRole('heading', { name: 'E2E Initiative' })).toBeVisible();
     await expect(page.getByRole('button', { name: /^Stammdaten/ })).toContainText('2/10');
@@ -30,10 +30,10 @@ test.describe('Initiative erstellen', () => {
 
   test('nur ein Abschnitt ist gleichzeitig offen', async ({ page }) => {
     await page.getByRole('button', { name: /^Stammdaten/ }).click();
-    await expect(page.getByRole('textbox', { name: 'Name' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Name der Initiative' })).toBeVisible();
 
     await page.getByRole('button', { name: /^Budget/ }).click();
-    await expect(page.getByRole('textbox', { name: 'Name' })).toBeHidden();
+    await expect(page.getByRole('textbox', { name: 'Name der Initiative' })).toBeHidden();
     await expect(page.getByRole('spinbutton', { name: 'Gesamtbudget (EUR)' })).toBeVisible();
   });
 
@@ -43,21 +43,23 @@ test.describe('Initiative erstellen', () => {
     await expect(page.getByText('Name ist ein Pflichtfeld')).toBeVisible();
   });
 
-  test('Zusammenfassung und Speichern legen die Initiative an', async ({ page }) => {
+  test('Zusammenfassung und Speichern legen die Initiative an und öffnen die Detailseite', async ({ page }) => {
     const name = `E2E ${Date.now()}`;
     await page.getByRole('button', { name: /^Stammdaten/ }).click();
-    await page.getByRole('textbox', { name: 'Name' }).fill(name);
+    await page.getByRole('textbox', { name: 'Name der Initiative' }).fill(name);
     await page.getByRole('button', { name: 'Zur Zusammenfassung' }).click();
 
     await expect(page.getByRole('heading', { name: 'Zusammenfassung' })).toBeVisible();
     await expect(page.locator('dd')).toContainText([name]);
 
     await page.getByRole('button', { name: 'Initiative anlegen' }).click();
-    await expect(page.getByRole('heading', { name: 'Übersicht' })).toBeVisible();
+    await expect(page).toHaveURL(/\/initiativen\/\d+$/);
+    await expect(page.getByRole('heading', { name })).toBeVisible();
+    await expect(page.locator('.meta')).toContainText('Entwurf');
 
+    await page.getByRole('link', { name: 'Übersicht' }).click();
     await page.getByRole('searchbox').fill(name);
     await expect(page.locator('tbody tr')).toHaveCount(1);
-    await expect(page.locator('tbody')).toContainText('Entwurf');
   });
 
   test('Abbrechen führt zur Übersicht', async ({ page }) => {

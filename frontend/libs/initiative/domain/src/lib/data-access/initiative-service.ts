@@ -2,7 +2,11 @@ import { HttpClient, httpResource } from '@angular/common/http';
 import { inject, Injectable, Signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ConfigurationService } from '@monorepo/shared-util';
-import { CreateInitiativeDto, Initiative } from '../domain/initiative';
+import {
+  CreateInitiativeDto,
+  Initiative,
+  InitiativeDetail,
+} from '../domain/initiative';
 import { InitiativeQueryDto } from '../dtos/initiative-query-dto';
 import { emptyPage, PageResult } from '../dtos/page-result';
 
@@ -36,31 +40,56 @@ export class InitiativeService {
     );
   }
 
-  loadInitiativeById(id: number): Promise<Initiative> {
-    return firstValueFrom(
-      this.http.get<Initiative>(`${this.baseUrl}/initiatives/${id}`)
+  /** Detail-Resource: lädt neu, sobald sich die Id ändert. */
+  createInitiativeResource(id: Signal<number | undefined>) {
+    return httpResource<InitiativeDetail>(() =>
+      id() ? `${this.baseUrl}/initiatives/${id()}` : undefined
     );
   }
 
-  /** Bildet das Formular (5 Abschnitte) auf die flache Backend-Struktur ab. */
-  createInitiative(dto: CreateInitiativeDto): Promise<Initiative> {
-    const body = {
+  loadInitiativeById(id: number): Promise<InitiativeDetail> {
+    return firstValueFrom(
+      this.http.get<InitiativeDetail>(`${this.baseUrl}/initiatives/${id}`)
+    );
+  }
+
+  createInitiative(dto: CreateInitiativeDto): Promise<InitiativeDetail> {
+    return firstValueFrom(
+      this.http.post<InitiativeDetail>(`${this.baseUrl}/initiatives`, this.toBody(dto))
+    );
+  }
+
+  updateInitiative(id: number, dto: CreateInitiativeDto): Promise<InitiativeDetail> {
+    return firstValueFrom(
+      this.http.put<InitiativeDetail>(`${this.baseUrl}/initiatives/${id}`, this.toBody(dto))
+    );
+  }
+
+  submitInitiative(id: number): Promise<InitiativeDetail> {
+    return firstValueFrom(
+      this.http.post<InitiativeDetail>(`${this.baseUrl}/initiatives/${id}/submit`, {})
+    );
+  }
+
+  deleteInitiative(id: number): Promise<void> {
+    return firstValueFrom(
+      this.http.delete<void>(`${this.baseUrl}/initiatives/${id}`)
+    );
+  }
+
+  /**
+   * Bildet das Formular (5 Abschnitte) auf die Backend-Struktur ab: die
+   * Listenfelder liegen flach oben, alle Felder zusätzlich unter `details`.
+   */
+  private toBody(dto: CreateInitiativeDto) {
+    return {
       name: dto.stammdaten.name,
       manager: dto.stammdaten.manager,
       freigabe: dto.status.freigabe || 'Entwurf',
       gesamtstatus: dto.status.gesamtstatus || 'Grün',
       phase: dto.status.phase || 'Geplant',
       reportingBis: dto.status.reportingBis || null,
-      details: {
-        ...dto.stammdaten,
-        ...dto.budget,
-        ...dto.gruppenstrategie,
-        ...dto.weitere,
-        statusKommentar: dto.status.statusKommentar,
-      },
+      details: dto,
     };
-    return firstValueFrom(
-      this.http.post<Initiative>(`${this.baseUrl}/initiatives`, body)
-    );
   }
 }

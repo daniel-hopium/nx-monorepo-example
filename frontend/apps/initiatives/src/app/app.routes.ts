@@ -2,8 +2,9 @@ import { Route } from '@angular/router';
 
 /**
  * Die App kennt nur die Einstiegspunkte. Die Reihenfolge ist wichtig:
- * spezifischere Pfade (erstellen, archiv) müssen vor dem Catch-all der
- * Übersicht stehen, sonst greift der Router zuerst die Übersicht.
+ * feste Pfade (erstellen) stehen vor Pfaden mit Parametern (:id), sonst
+ * würde "erstellen" als Id interpretiert. "initiativen/archiv" ist ein
+ * Kind der Übersicht und wird deshalb vor ":id" gefunden.
  */
 export const appRoutes: Route[] = [
   { path: '', pathMatch: 'full', redirectTo: 'initiativen' },
@@ -14,6 +15,15 @@ export const appRoutes: Route[] = [
   {
     path: 'initiativen',
     loadChildren: () => import('@monorepo/initiative-feature-overview'),
+  },
+  {
+    // Bearbeiten nutzt dasselbe Feature wie Erstellen, nur mit geladener Id.
+    path: 'initiativen/:id/bearbeiten',
+    loadChildren: () => import('@monorepo/initiative-feature-create'),
+  },
+  {
+    path: 'initiativen/:id',
+    loadChildren: () => import('@monorepo/initiative-feature-detail'),
   },
   // Platzhalter für die restlichen Hauptbereiche.
   { path: 'auswertung', redirectTo: 'initiativen' },

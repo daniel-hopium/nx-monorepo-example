@@ -44,6 +44,7 @@
     [sortBy]="query().sortBy"
     [sortDir]="query().sortDir"
     (sortChange)="onSort($event)"
+    (rowClick)="openInitiative($event)"
   />
 
   <ds-pagination

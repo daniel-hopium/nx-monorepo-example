@@ -12,6 +12,12 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
 ## Unveröffentlicht
 
 ### Neu
+- Detailseite einer Initiative (Klick auf eine Zeile der Übersicht): Kopf mit
+  „Löschen“, „Bearbeiten“ und „Absenden“, Info-Karte mit Freigabe-Badge, Ersteller und
+  Aktualisierungsdatum, alle Abschnitte als Label/Wert-Listen. „Absenden“ setzt einen
+  Entwurf auf „Freigabe offen“, „Bearbeiten“ lädt den Datensatz ins Formular.
+- Stammdaten-Felder ans Mockup angeglichen (Kurztitel, Initiativen-ID,
+  Konzernunternehmen im Lead, Typ, Interne Kooperation, Auftraggeber*in).
 - Angular-App `initiatives` mit Kopfzeile, Haupt- und Unternavigation. Die
   Übersicht zeigt Initiativen als sortierbare Tabelle mit Suche, Filter (Phase,
   Freigabe), Status-Badges und Seitennavigation; das Archiv nutzt dieselbe Ansicht.

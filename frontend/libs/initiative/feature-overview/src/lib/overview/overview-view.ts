@@ -1,6 +1,8 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   FREIGABEN,
+  Initiative,
   InitiativeQueryDto,
   InitiativeService,
   initialInitiativeQueryDto,
@@ -22,6 +24,7 @@ import { Pagination, SearchBox } from '@monorepo/shared-ui-elements';
 })
 export class OverviewView {
   private readonly initiativeService = inject(InitiativeService);
+  private readonly router = inject(Router);
 
   /** Kommt aus `data: { archiviert: true }` der Route (withComponentInputBinding). */
   readonly archiviert = input(false);
@@ -76,5 +79,10 @@ export class OverviewView {
 
   protected resetFilters() {
     this.patch({ phase: '', freigabe: '' });
+  }
+
+  /** Klick auf eine Zeile öffnet die Detailseite. */
+  protected openInitiative(initiative: Initiative) {
+    this.router.navigate(['/initiativen', initiative.id]);
   }
 }

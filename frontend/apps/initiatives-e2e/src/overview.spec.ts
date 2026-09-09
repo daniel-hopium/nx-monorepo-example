@@ -23,13 +23,24 @@ test.describe('Übersicht', () => {
   });
 
   test('sortiert beim Klick auf den Spaltenkopf', async ({ page }) => {
-    const firstCell = page.locator('tbody tr').first().locator('td').first();
-    await expect(firstCell).toHaveText('Angebotsportfolio Energie');
+    // Keine festen Namen: andere Tests legen parallel Initiativen an. Stattdessen
+    // prüfen wir, dass die Spalte nach dem Klick wirklich absteigend sortiert ist.
+    const names = () => page.locator('tbody tr td:first-child').allTextContents();
+    const sorted = (list: string[], dir: 1 | -1) =>
+      [...list].sort((a, b) => a.localeCompare(b, 'de') * dir);
 
-    // Zweiter Klick auf "Initiative" dreht die Richtung um.
+    await expect(page.locator('tbody tr')).toHaveCount(20);
+    const asc = await names();
+    expect(asc).toEqual(sorted(asc, 1));
+
     // Erste Spalte "Initiative" (Name-Regex würde auch "Initiativen-Manager*in" treffen).
     await page.locator('th button').first().click();
-    await expect(firstCell).toHaveText('Wasserstoff-Busse');
+    await expect(page.locator('th button').first()).toContainText('▼');
+    // Auf die neu geladene Liste warten (erste Zeile ist eine andere).
+    await expect(page.locator('tbody tr td:first-child').first()).not.toHaveText(asc[0]);
+    const desc = await names();
+    expect(desc).toEqual(sorted(desc, -1));
+    expect(desc[0]).not.toBe(asc[0]);
   });
 
   test('blättert zur zweiten Seite', async ({ page }) => {

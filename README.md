@@ -16,7 +16,8 @@ frontend/
     flight/ui-blocks                 Präsentations-Komponenten der Domäne
     initiative/domain                Modell, Formular-DTO mit Signal-Forms-Schema, Service
     initiative/feature-overview      Übersicht/Archiv: Suche, Filter, Sortierung, Paging
-    initiative/feature-create        Initiative erstellen (Akkordeon) + Zusammenfassung
+    initiative/feature-create        Initiative erstellen/bearbeiten (Akkordeon) + Zusammenfassung
+    initiative/feature-detail        Detailseite mit Löschen, Bearbeiten, Absenden
     initiative/ui-blocks             Tabelle und Formularblöcke der Domäne
     shared/ui-elements               Generische UI-Elemente (Badge, Pagination, Akkordeon, Textfeld, Dropdown, Suche)
     shared/util                      Domänenübergreifende Helfer (Konfiguration)

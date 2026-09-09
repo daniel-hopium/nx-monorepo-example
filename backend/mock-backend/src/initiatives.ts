@@ -18,7 +18,12 @@ export type Initiative = {
   phase: Phase;
   reportingBis: string | null;
   archiviert: boolean;
-  details: Record<string, string | number | null>;
+  // Metadaten, die der Server pflegt (Nutzer kann sie nicht editieren).
+  erstelltVon: string;
+  erstelltAm: string;
+  aktualisiertAm: string;
+  // Alle Formularfelder, gruppiert nach Abschnitt.
+  details: Record<string, Record<string, string | number | null>>;
 };
 
 export type PageResult<T> = {
@@ -40,25 +45,64 @@ const NAMES = [
 ];
 
 const PHASES: Phase[] = ['Geplant', 'Umsetzung', 'On Hold', 'Umsetzung', 'Geplant'];
+const KONZERNUNTERNEHMEN = ['Wiener Stadtwerke', 'Wiener Linien', 'Wien Energie', 'Wiener Netze'];
+const TYPEN = ['Organisation', 'Projekt', 'Programm'];
+
+const today = () => new Date().toISOString().slice(0, 10);
 
 export const initiativeList: Initiative[] = NAMES.map((name, idx) => {
   const id = idx + 1;
   const freigabe: Freigabe =
     id === 2 ? 'Freigabe offen' : id === 15 ? 'Entwurf' : 'Veröffentlicht';
+  const manager = id === 15 ? 'Richard Wagner' : 'Conny Bauer';
   return {
     id,
     name,
     freigabe,
-    manager: id === 15 ? 'Richard Wagner' : 'Conny Bauer',
+    manager,
     gesamtstatus: 'Grün',
     phase: PHASES[idx % PHASES.length],
     reportingBis: freigabe === 'Freigabe offen' ? null : '2025-06-30',
     archiviert: false,
-    details: {},
+    erstelltVon: 'John Doe',
+    erstelltAm: '2025-04-30',
+    aktualisiertAm: '2025-07-16',
+    details: {
+      stammdaten: {
+        name,
+        kurztitel: `25_WSTW_${String(id).padStart(3, '0')}`,
+        initiativenId: `#WSTW${123400 + id}`,
+        konzernunternehmen: KONZERNUNTERNEHMEN[idx % KONZERNUNTERNEHMEN.length],
+        typ: TYPEN[idx % TYPEN.length],
+        interneKooperation: '',
+        manager,
+        auftraggeber: 'Konzernintern',
+        startdatum: '2025-05-01',
+        enddatum: '2026-12-31',
+      },
+      status: {
+        phase: PHASES[idx % PHASES.length],
+        gesamtstatus: 'Grün',
+        freigabe,
+        statusKommentar: '',
+        reportingBis: freigabe === 'Freigabe offen' ? '' : '2025-06-30',
+      },
+      budget: {
+        gesamtbudget: 250000 + id * 1000,
+        budgetJahr: 80000,
+        verbraucht: 12000,
+        finanzierungsquelle: 'Eigenmittel',
+      },
+      gruppenstrategie: { strategischesZiel: 'Klimaneutral 2040', beitrag: '', kpi: '' },
+      weitere: { risiken: '', abhaengigkeiten: '', notizen: '' },
+    },
   };
 });
 
 type SortKey = 'name' | 'freigabe' | 'manager' | 'gesamtstatus' | 'phase';
+type WriteBody = Partial<Omit<Initiative, 'id' | 'erstelltVon' | 'erstelltAm' | 'aktualisiertAm'>>;
+
+const findById = (id: string) => initiativeList.find((i) => i.id === parseInt(id, 10));
 
 export const initiativesRouter = Router();
 
@@ -97,9 +141,7 @@ initiativesRouter.get('/', (req, res) => {
 });
 
 initiativesRouter.get('/:id', (req, res) => {
-  const initiative = initiativeList.find(
-    (i) => i.id === parseInt(req.params.id, 10)
-  );
+  const initiative = findById(req.params.id);
   if (initiative) {
     res.json(initiative);
   } else {
@@ -108,7 +150,7 @@ initiativesRouter.get('/:id', (req, res) => {
 });
 
 initiativesRouter.post('/', (req, res) => {
-  const body = req.body as Partial<Initiative> & { details?: Initiative['details'] };
+  const body = req.body as WriteBody;
   const nextId = Math.max(0, ...initiativeList.map((i) => i.id)) + 1;
   const initiative: Initiative = {
     id: nextId,
@@ -119,8 +161,44 @@ initiativesRouter.post('/', (req, res) => {
     phase: body.phase ?? 'Geplant',
     reportingBis: body.reportingBis ?? null,
     archiviert: false,
+    erstelltVon: 'John Doe',
+    erstelltAm: today(),
+    aktualisiertAm: today(),
     details: body.details ?? {},
   };
   initiativeList.push(initiative);
   res.status(201).json(initiative);
+});
+
+initiativesRouter.put('/:id', (req, res) => {
+  const initiative = findById(req.params.id);
+  if (!initiative) {
+    res.status(404).json({ message: 'Initiative not found' });
+    return;
+  }
+  const body = req.body as WriteBody;
+  Object.assign(initiative, body, { id: initiative.id, aktualisiertAm: today() });
+  res.json(initiative);
+});
+
+/** "Absenden": Entwurf geht in die Freigabe. */
+initiativesRouter.post('/:id/submit', (req, res) => {
+  const initiative = findById(req.params.id);
+  if (!initiative) {
+    res.status(404).json({ message: 'Initiative not found' });
+    return;
+  }
+  initiative.freigabe = 'Freigabe offen';
+  initiative.aktualisiertAm = today();
+  res.json(initiative);
+});
+
+initiativesRouter.delete('/:id', (req, res) => {
+  const index = initiativeList.findIndex((i) => i.id === parseInt(req.params.id, 10));
+  if (index === -1) {
+    res.status(404).json({ message: 'Initiative not found' });
+    return;
+  }
+  initiativeList.splice(index, 1);
+  res.status(204).send();
 });

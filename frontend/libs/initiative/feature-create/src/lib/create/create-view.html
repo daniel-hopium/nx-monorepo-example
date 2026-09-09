@@ -1,5 +1,8 @@
 <section class="card">
   <h1>{{ title() }}</h1>
+  @if (loadError()) {
+    <p class="error">Initiative konnte nicht geladen werden.</p>
+  }
 
   <ds-accordion-section
     title="Stammdaten"

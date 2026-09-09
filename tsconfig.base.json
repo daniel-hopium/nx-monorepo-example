@@ -7,21 +7,14 @@
     "moduleResolution": "bundler",
     "module": "preserve",
     "target": "es2022",
-    "lib": [
-      "es2022",
-      "dom"
-    ],
+    "lib": ["es2022", "dom"],
     "importHelpers": true,
     "isolatedModules": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "paths": {
-      "@monorepo/shared-util": [
-        "./frontend/libs/shared/util/src/index.ts"
-      ],
-      "@monorepo/flight-domain": [
-        "./frontend/libs/flight/domain/src/index.ts"
-      ],
+      "@monorepo/shared-util": ["./frontend/libs/shared/util/src/index.ts"],
+      "@monorepo/flight-domain": ["./frontend/libs/flight/domain/src/index.ts"],
       "@monorepo/flight-ui-blocks": [
         "./frontend/libs/flight/ui-blocks/src/index.ts"
       ],
@@ -42,11 +35,11 @@
       ],
       "@monorepo/initiative-feature-create": [
         "./frontend/libs/initiative/feature-create/src/index.ts"
+      ],
+      "@monorepo/initiative-feature-detail": [
+        "./frontend/libs/initiative/feature-detail/src/index.ts"
       ]
     }
   },
-  "exclude": [
-    "node_modules",
-    "tmp"
-  ]
+  "exclude": ["node_modules", "tmp"]
 }
