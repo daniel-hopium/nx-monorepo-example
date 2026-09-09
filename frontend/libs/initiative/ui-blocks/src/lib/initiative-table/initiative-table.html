@@ -1,0 +1,35 @@
+<table class="table">
+  <thead>
+    <tr>
+      @for (col of columns; track col.key) {
+        <th>
+          <button type="button" class="sort" (click)="sort(col.key)">
+            {{ col.label }}
+            <span class="arrows" [class.active]="sortBy() === col.key" aria-hidden="true">
+              {{ sortBy() === col.key ? (sortDir() === 'asc' ? '▲' : '▼') : '⇅' }}
+            </span>
+          </button>
+        </th>
+      }
+      <th>Reporting</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track row.id) {
+      <tr (click)="rowClick.emit(row)">
+        <td class="name">{{ row.name }}</td>
+        <td><ds-status-badge [variant]="freigabeVariant(row.freigabe)">{{ row.freigabe }}</ds-status-badge></td>
+        <td>{{ row.manager }}</td>
+        <td><ds-status-badge [variant]="statusVariant(row.gesamtstatus)">✓ {{ row.gesamtstatus }}</ds-status-badge></td>
+        <td>{{ row.phase }}</td>
+        <td class="muted">
+          @if (row.reportingBis) {
+            zu reporten bis {{ row.reportingBis | date: 'd.M.yyyy' }}
+          }
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="6" class="empty">Keine Initiativen gefunden.</td></tr>
+    }
+  </tbody>
+</table>

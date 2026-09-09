@@ -5,7 +5,12 @@ export default [
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
   {
-    ignores: ['**/dist', '**/out-tsc', '**/target'],
+    ignores: [
+      '**/dist',
+      '**/out-tsc',
+      '**/target',
+      '**/vitest.config.*.timestamp*',
+    ],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
@@ -25,14 +30,20 @@ export default [
               onlyDependOnLibsWithTags: ['domain:flight', 'domain:shared'],
             },
             {
+              sourceTag: 'domain:initiative',
+              onlyDependOnLibsWithTags: ['domain:initiative', 'domain:shared'],
+            },
+            {
               sourceTag: 'domain:shared',
               onlyDependOnLibsWithTags: ['domain:shared'],
             },
-            // Technische Schichten: app -> feature -> ui -> domain -> util.
+            // Technische Schichten: app -> feature -> ui-composition -> ui -> domain -> util.
+            // ui-composition = Blöcke, die aus generischen ui-Elementen zusammengesetzt sind.
             {
               sourceTag: 'type:app',
               onlyDependOnLibsWithTags: [
                 'type:feature',
+                'type:ui-composition',
                 'type:ui',
                 'type:domain',
                 'type:util',
@@ -41,6 +52,7 @@ export default [
             {
               sourceTag: 'type:feature',
               onlyDependOnLibsWithTags: [
+                'type:ui-composition',
                 'type:ui',
                 'type:domain',
                 'type:util',
@@ -49,6 +61,10 @@ export default [
             },
             {
               sourceTag: 'type:api',
+              onlyDependOnLibsWithTags: ['type:ui', 'type:domain', 'type:util'],
+            },
+            {
+              sourceTag: 'type:ui-composition',
               onlyDependOnLibsWithTags: ['type:ui', 'type:domain', 'type:util'],
             },
             {

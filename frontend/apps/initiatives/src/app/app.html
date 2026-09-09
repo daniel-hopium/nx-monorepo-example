@@ -1,0 +1,25 @@
+<header class="header">
+  <a class="logo" routerLink="/initiativen" aria-label="Startseite">
+    <span class="logo-mark" aria-hidden="true">≋</span>
+    <span class="logo-text">WIENER<br />STADTWERKE</span>
+  </a>
+  <nav class="main-nav">
+    @for (item of mainNav; track item.link) {
+      <a [routerLink]="item.link" routerLinkActive="active">{{ item.label }}</a>
+    }
+  </nav>
+</header>
+
+<nav class="sub-nav">
+  @for (item of subNav; track item.link) {
+    <a
+      [routerLink]="item.link"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: item.exact }"
+    >{{ item.label }}</a>
+  }
+</nav>
+
+<main class="content">
+  <router-outlet />
+</main>

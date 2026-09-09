@@ -1,0 +1,21 @@
+{
+  "name": "initiative-feature-overview",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "frontend/libs/initiative/feature-overview/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": ["type:feature", "domain:initiative"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "frontend/libs/initiative/feature-overview/jest.config.cts",
+        "tsConfig": "frontend/libs/initiative/feature-overview/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "name": "initiatives",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "frontend/apps/initiatives/src",
+  "tags": ["type:app", "domain:initiative"],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/frontend/apps/initiatives",
+        "browser": "frontend/apps/initiatives/src/main.ts",
+        "tsConfig": "frontend/apps/initiatives/tsconfig.app.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "frontend/apps/initiatives/public"
+          }
+        ],
+        "styles": ["frontend/apps/initiatives/src/styles.css"]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "configurations": {
+        "production": {
+          "buildTarget": "initiatives:build:production"
+        },
+        "development": {
+          "buildTarget": "initiatives:build:development"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "frontend/apps/initiatives/jest.config.cts",
+        "tsConfig": "frontend/apps/initiatives/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "initiatives:build",
+        "staticFilePath": "dist/frontend/apps/initiatives/browser",
+        "spa": true
+      }
+    }
+  }
+}

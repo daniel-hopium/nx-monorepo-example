@@ -1,0 +1,32 @@
+{
+  "name": "initiative-ui-blocks",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "frontend/libs/initiative/ui-blocks/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [
+    "type:ui-composition",
+    "domain:initiative"
+  ],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
+      "options": {
+        "jestConfig": "frontend/libs/initiative/ui-blocks/jest.config.cts",
+        "tsConfig": "frontend/libs/initiative/ui-blocks/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test-browser": {
+      "executor": "@nx/vitest:test",
+      "options": {
+        "configFile": "frontend/libs/initiative/ui-blocks/vite.config.mts"
+      }
+    }
+  }
+}

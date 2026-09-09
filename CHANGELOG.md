@@ -12,6 +12,14 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
 ## Unveröffentlicht
 
 ### Neu
+- Angular-App `initiatives` mit Kopfzeile, Haupt- und Unternavigation. Die
+  Übersicht zeigt Initiativen als sortierbare Tabelle mit Suche, Filter (Phase,
+  Freigabe), Status-Badges und Seitennavigation; das Archiv nutzt dieselbe Ansicht.
+- Seite „Initiative erstellen“ mit fünf aufklappbaren Abschnitten (Stammdaten,
+  Status, Budget, Gruppenstrategie, Weitere), Zähler ausgefüllter Felder je
+  Abschnitt, Zusammenfassung und Speichern ans Mock-Backend.
+- Mock-Backend liefert Initiativen unter `/api/initiatives` mit Suche, Sortierung,
+  Filter und Paging.
 - Angular-22-App `flight` mit Seitenmenü und lazy geladenem Feature „Nächste Flüge“,
   das Flüge vom Backend lädt und als Karten anzeigt.
 - Express-Mock-Backend (Port 5100) mit Flug- und Flugzeugdaten inklusive Suche,
@@ -20,6 +28,12 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
   MVC-Schichtung (Controller, Service, Repository) zum Vergleich mit Express.
 
 ### Intern
+- End-to-End-Tests mit Playwright (`pnpm e2e`) für Übersicht und „Initiative erstellen“;
+  Mock-Backend und App werden automatisch gestartet.
+- Vitest im Browser-Modus (Chromium) für UI-Komponenten (`pnpm test:browser`),
+  getrennt von den Jest-Unit-Tests über die Endung `.browser.spec.ts`.
+- Neue Schicht `type:ui-composition` (Blöcke aus generischen UI-Elementen) und
+  Domäne `domain:initiative` in den ESLint-Modulgrenzen.
 - Nx-Workspace mit pnpm, ESLint, Jest und Prettier aufgesetzt; Struktur nach dem
   Angular-Architects-Workshop (`frontend/apps`, `frontend/libs`, `backend`).
 - DDD-Bibliotheken `flight-domain`, `flight-feature-next-flights`, `flight-ui-blocks`

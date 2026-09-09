@@ -13,6 +13,7 @@ import {
   getFlightById,
 } from './test-data';
 import { flightsToFlightInfoDto } from './util';
+import { initiativesRouter } from './initiatives';
 
 const app = express();
 // Erlaubt Aufrufe vom Angular-Dev-Server (anderer Port = anderer Origin).
@@ -23,6 +24,9 @@ app.use(express.json());
 app.get('/api', (_req, res) => {
   res.json({ message: 'Welcome to mock-backend!' });
 });
+
+// Routen der Domäne "Initiative" (eigener Router, eigene Datei).
+app.use('/api/initiatives', initiativesRouter);
 
 app.get('/api/aircraft-infos', (_req, res) => {
   res.json(aircraftList);

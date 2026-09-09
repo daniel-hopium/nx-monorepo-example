@@ -1,0 +1,65 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.6rem 1.25rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 2;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #1f3a93;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.35rem 0.6rem;
+  font-weight: 700;
+  font-size: 0.6rem;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+
+.logo-mark {
+  font-size: 1.1rem;
+}
+
+.main-nav {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+}
+
+.main-nav a,
+.sub-nav a {
+  color: #24292f;
+  text-decoration: none;
+}
+
+.main-nav a.active {
+  font-weight: 700;
+  color: #1f3a93;
+}
+
+.sub-nav {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0.5rem 1.25rem;
+  background: #fff;
+  font-size: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  position: relative;
+  z-index: 1;
+}
+
+.sub-nav a.active {
+  font-weight: 700;
+  color: #1f3a93;
+}
+
+.content {
+  padding: 1rem 1.25rem 2rem;
+}

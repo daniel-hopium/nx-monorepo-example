@@ -32,6 +32,12 @@
       "options": {
         "targetName": "eslint:lint"
       }
+    },
+    {
+      "plugin": "@nx/playwright/plugin",
+      "options": {
+        "targetName": "e2e"
+      }
     }
   ],
   "analytics": false,
@@ -64,6 +70,10 @@
           "codeCoverage": true
         }
       }
+    },
+    "@nx/vitest:test": {
+      "cache": true,
+      "inputs": ["default", "^production"]
     }
   },
   "generators": {

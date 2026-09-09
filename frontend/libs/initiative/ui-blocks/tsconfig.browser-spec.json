@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../../dist/out-tsc",
+    "types": ["vitest", "vite/client", "node"]
+  },
+  "files": ["src/test-setup.browser.ts"],
+  "include": ["vite.config.mts", "src/**/*.browser.spec.ts", "src/**/*.d.ts"]
+}

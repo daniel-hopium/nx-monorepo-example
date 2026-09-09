@@ -1,0 +1,21 @@
+{
+  "name": "initiative-domain",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "frontend/libs/initiative/domain/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": ["type:domain", "domain:initiative"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "frontend/libs/initiative/domain/jest.config.cts",
+        "tsConfig": "frontend/libs/initiative/domain/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

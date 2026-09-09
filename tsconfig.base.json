@@ -27,6 +27,21 @@
       ],
       "@monorepo/flight-feature-next-flights": [
         "./frontend/libs/flight/feature-next-flights/src/index.ts"
+      ],
+      "@monorepo/shared-ui-elements": [
+        "./frontend/libs/shared/ui-elements/src/index.ts"
+      ],
+      "@monorepo/initiative-domain": [
+        "./frontend/libs/initiative/domain/src/index.ts"
+      ],
+      "@monorepo/initiative-ui-blocks": [
+        "./frontend/libs/initiative/ui-blocks/src/index.ts"
+      ],
+      "@monorepo/initiative-feature-overview": [
+        "./frontend/libs/initiative/feature-overview/src/index.ts"
+      ],
+      "@monorepo/initiative-feature-create": [
+        "./frontend/libs/initiative/feature-create/src/index.ts"
       ]
     }
   },

@@ -1,0 +1,55 @@
+<section class="card">
+  <h1>{{ title() }}</h1>
+
+  <div class="toolbar">
+    <ds-search-box [value]="query().search" (valueChange)="onSearch($event)" />
+    <button type="button" class="filter-btn" [class.active]="filterOpen() || activeFilters() > 0" (click)="filterOpen.set(!filterOpen())">
+      ⚟ Filter
+      @if (activeFilters() > 0) {
+        <span class="count">{{ activeFilters() }}</span>
+      }
+    </button>
+  </div>
+
+  @if (filterOpen()) {
+    <div class="filters">
+      <label>
+        Phase
+        <select [value]="query().phase" (change)="onPhase($event)">
+          <option value="">Alle</option>
+          @for (p of phasen; track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Freigabe
+        <select [value]="query().freigabe" (change)="onFreigabe($event)">
+          <option value="">Alle</option>
+          @for (f of freigaben; track f) {
+            <option [value]="f">{{ f }}</option>
+          }
+        </select>
+      </label>
+      <button type="button" class="link" (click)="resetFilters()">Zurücksetzen</button>
+    </div>
+  }
+
+  @if (page.error()) {
+    <p class="error">Initiativen konnten nicht geladen werden. Läuft das Mock-Backend?</p>
+  }
+
+  <lib-initiative-table
+    [rows]="page.value().items"
+    [sortBy]="query().sortBy"
+    [sortDir]="query().sortDir"
+    (sortChange)="onSort($event)"
+  />
+
+  <ds-pagination
+    [page]="page.value().page"
+    [pageSize]="page.value().pageSize"
+    [total]="page.value().total"
+    (pageChange)="onPage($event)"
+  />
+</section>

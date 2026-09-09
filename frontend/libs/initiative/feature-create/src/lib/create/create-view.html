@@ -1,0 +1,53 @@
+<section class="card">
+  <h1>{{ title() }}</h1>
+
+  <ds-accordion-section
+    title="Stammdaten"
+    [counter]="counters().stammdaten"
+    [expanded]="open() === 'stammdaten'"
+    (expandedChange)="toggle('stammdaten', $event)"
+  >
+    <lib-stammdaten-form [section]="f.stammdaten" />
+  </ds-accordion-section>
+
+  <ds-accordion-section
+    title="Status der Initiative"
+    [counter]="counters().status"
+    [expanded]="open() === 'status'"
+    (expandedChange)="toggle('status', $event)"
+  >
+    <lib-status-form [section]="f.status" />
+  </ds-accordion-section>
+
+  <ds-accordion-section
+    title="Budget"
+    [counter]="counters().budget"
+    [expanded]="open() === 'budget'"
+    (expandedChange)="toggle('budget', $event)"
+  >
+    <lib-budget-form [section]="f.budget" />
+  </ds-accordion-section>
+
+  <ds-accordion-section
+    title="Gruppenstrategie"
+    [counter]="counters().gruppenstrategie"
+    [expanded]="open() === 'gruppenstrategie'"
+    (expandedChange)="toggle('gruppenstrategie', $event)"
+  >
+    <lib-gruppenstrategie-form [section]="f.gruppenstrategie" />
+  </ds-accordion-section>
+
+  <ds-accordion-section
+    title="Weitere / Diverse"
+    [counter]="counters().weitere"
+    [expanded]="open() === 'weitere'"
+    (expandedChange)="toggle('weitere', $event)"
+  >
+    <lib-weitere-form [section]="f.weitere" />
+  </ds-accordion-section>
+
+  <div class="actions">
+    <button type="button" class="btn secondary" (click)="cancel()">Abbrechen</button>
+    <button type="button" class="btn primary" (click)="toSummary()">Zur Zusammenfassung</button>
+  </div>
+</section>

@@ -58,3 +58,5 @@ target/
 *.iml
 *.iws
 *.ipr
+
+vitest.config.*.timestamp*
