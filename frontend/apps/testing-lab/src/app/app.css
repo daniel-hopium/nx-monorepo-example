@@ -1,0 +1,35 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.7rem 1.25rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.brand {
+  font-weight: 700;
+  color: #1f3a93;
+}
+
+.nav {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.85rem;
+}
+
+.nav a {
+  color: #24292f;
+  text-decoration: none;
+}
+
+.nav a.active {
+  font-weight: 700;
+  color: #1f3a93;
+}
+
+.content {
+  max-width: 900px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+}

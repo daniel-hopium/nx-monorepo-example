@@ -12,6 +12,11 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
 ## Unveröffentlicht
 
 ### Neu
+- Lern-App `testing-lab` (Aufgabenliste mit Formular, Filter, Statistik-Seite und
+  Toasts) samt `TESTING.md`: 46 jsdom-Tests und 12 Browser-Tests zeigen reine
+  Unit-Tests, Pipes, Services mit HttpTestingController, Fake Timers, Modul-Mocks
+  (`vi.mock`), Spione (`vi.spyOn`/`vi.fn`), DI-Fakes (`useValue`), Router-Tests
+  mit RouterTestingHarness und Browser-Tests mit `page`/`userEvent`/`expect.element`.
 - Detailseite einer Initiative (Klick auf eine Zeile der Übersicht): Kopf mit
   „Löschen“, „Bearbeiten“ und „Absenden“, Info-Karte mit Freigabe-Badge, Ersteller und
   Aktualisierungsdatum, alle Abschnitte als Label/Wert-Listen. „Absenden“ setzt einen
@@ -34,6 +39,9 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
   MVC-Schichtung (Controller, Service, Repository) zum Vergleich mit Express.
 
 ### Intern
+- `@vitest/browser` als devDependency, damit `import { page, userEvent } from 'vitest/browser'`
+  typisiert ist. `testing-lab` nutzt Vitest (Analog-Plugin) auch für die jsdom-Tests,
+  mit getrennten Konfigurationen `vite.config.mts` und `vite.browser.config.mts`.
 - End-to-End-Tests mit Playwright (`pnpm e2e`) für Übersicht und „Initiative erstellen“;
   Mock-Backend und App werden automatisch gestartet.
 - Vitest im Browser-Modus (Chromium) für UI-Komponenten (`pnpm test:browser`),

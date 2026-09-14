@@ -10,6 +10,7 @@ Angular-Architects-Workshop.
 frontend/
   apps/flight                        Angular-App "Flight" (nur Routing + Layout)
   apps/initiatives                   Angular-App "Initiativen" (Übersicht, Erstellen, Archiv)
+  apps/testing-lab                   Lern-App zum Testen mit Vitest (siehe TESTING.md dort)
   libs/
     flight/domain                    Domänenmodell, DTOs, Data-Access (HTTP)
     flight/feature-next-flights      Feature "Nächste Flüge" (Smart Components, Routen)
@@ -47,6 +48,8 @@ pnpm nx serve mock-backend      # Express-Backend auf http://localhost:5100/api
 pnpm nx serve spring-backend    # Spring-Backend auf http://localhost:5200/api
 pnpm nx serve flight            # Angular-App "Flight" auf http://localhost:4200
 pnpm start:initiatives          # Angular-App "Initiativen" auf http://localhost:4300
+pnpm start:lab                  # Lern-App "Testing Lab" auf http://localhost:4400
+pnpm test:lab                   # Vitest: jsdom- und Browser-Tests der Lern-App
 
 pnpm nx run-many -t lint test build
 pnpm nx graph                   # Abhängigkeitsgraph im Browser

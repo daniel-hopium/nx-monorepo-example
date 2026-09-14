@@ -1,0 +1,30 @@
+[
+  {
+    "id": "t-1",
+    "title": "Vitest-Grundlagen lesen",
+    "priority": "hoch",
+    "done": false,
+    "dueDate": "2026-09-16"
+  },
+  {
+    "id": "t-2",
+    "title": "Erste Unit-Tests schreiben",
+    "priority": "mittel",
+    "done": false,
+    "dueDate": "2026-09-20"
+  },
+  {
+    "id": "t-3",
+    "title": "Komponententest im Browser ausprobieren",
+    "priority": "niedrig",
+    "done": true,
+    "dueDate": "2026-09-10"
+  },
+  {
+    "id": "t-4",
+    "title": "HTTP-Aufrufe mocken",
+    "priority": "hoch",
+    "done": false,
+    "dueDate": "2026-09-12"
+  }
+]

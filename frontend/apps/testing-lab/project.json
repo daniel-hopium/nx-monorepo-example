@@ -1,0 +1,96 @@
+{
+  "name": "testing-lab",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "lab",
+  "sourceRoot": "frontend/apps/testing-lab/src",
+  "tags": [
+    "type:app",
+    "domain:testing-lab"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/frontend/apps/testing-lab",
+        "browser": "frontend/apps/testing-lab/src/main.ts",
+        "tsConfig": "frontend/apps/testing-lab/tsconfig.app.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "frontend/apps/testing-lab/public"
+          }
+        ],
+        "styles": [
+          "frontend/apps/testing-lab/src/styles.css"
+        ]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "configurations": {
+        "production": {
+          "buildTarget": "testing-lab:build:production"
+        },
+        "development": {
+          "buildTarget": "testing-lab:build:development"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": [
+        "{options.reportsDirectory}"
+      ],
+      "options": {
+        "reportsDirectory": "coverage/frontend/apps/testing-lab"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "testing-lab:build",
+        "staticFilePath": "dist/frontend/apps/testing-lab/browser",
+        "spa": true
+      }
+    },
+    "test-browser": {
+      "executor": "@nx/vitest:test",
+      "options": {
+        "configFile": "frontend/apps/testing-lab/vite.browser.config.mts"
+      }
+    }
+  }
+}

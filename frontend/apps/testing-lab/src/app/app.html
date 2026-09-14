@@ -1,0 +1,14 @@
+<header class="header">
+  <span class="brand">Testing Lab</span>
+  <nav class="nav">
+    @for (item of nav; track item.link) {
+      <a [routerLink]="item.link" routerLinkActive="active">{{ item.label }}</a>
+    }
+  </nav>
+</header>
+
+<main class="content">
+  <router-outlet />
+</main>
+
+<lab-toasts />
