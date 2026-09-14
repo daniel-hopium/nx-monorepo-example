@@ -12,6 +12,11 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
 ## Unveröffentlicht
 
 ### Neu
+- `testing-lab`: Seite „Kontakte“ als Smart Component mit NgRx Signal Store (Suche mit
+  Debounce, Anlegen, optimistisches Löschen und Favorisieren mit Rollback). Der Store ruft
+  einen API-Service; im Browser beantwortet ein Fake-Backend-Interceptor die Requests.
+  Getestet in vier Schichten: API mit HttpTestingController, Store mit gemockter API und
+  Fake Timers, Komponente mit gefaktem Store (`overrideComponent`), Integration im Browser.
 - `testing-lab`: Barrierefreiheits-Tests (`*.a11y.browser.spec.ts`) für Listenzeile,
   Formular und Tabelle. Sie prüfen Tastaturbedienung, Tab-Reihenfolge, sichtbaren
   Fokus sowie exakte Accessible Names und Descriptions. `TESTING.md` erklärt das
@@ -48,6 +53,8 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
   MVC-Schichtung (Controller, Service, Repository) zum Vergleich mit Express.
 
 ### Behoben
+- `testing-lab`: Toast-Browser-Test war flaky, weil 50 ms Anzeigedauer unter Last kürzer
+  war als die Prüfung. Jetzt 500 ms mit explizitem Timeout.
 - `testing-lab`, Tabelle: klickbare Zeilen waren per Tastatur nicht erreichbar. Mit dem
   neuen Input `rowActionLabel` bekommt die erste Zelle einen fokussierbaren Button.
 - `testing-lab`, Tabelle: Sortier-Buttons heißen jetzt „<Spalte> sortieren“ statt nur

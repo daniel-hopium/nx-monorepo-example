@@ -86,6 +86,7 @@
     "@angular/platform-browser": "~22.1.0",
     "@angular/platform-browser-dynamic": "~22.1.0",
     "@angular/router": "~22.1.0",
+    "@ngrx/signals": "22.0.1",
     "cors": "^2.8.6",
     "express": "^5.1.0",
     "rxjs": "~7.8.0"

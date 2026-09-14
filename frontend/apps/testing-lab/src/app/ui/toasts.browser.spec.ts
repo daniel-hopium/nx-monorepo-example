@@ -1,8 +1,8 @@
 /**
  * TOAST (Browser, mit echtem NotificationService)
  *
- * Im Browser lassen wir den echten Service laufen und nutzen eine sehr
- * kurze Anzeigedauer (50 ms). `expect.element(...).not.toBeInTheDocument()`
+ * Im Browser lassen wir den echten Service laufen und nutzen eine kurze
+ * Anzeigedauer (500 ms). `expect.element(...).not.toBeInTheDocument()`
  * wartet von selbst, bis der Toast verschwunden ist. So testet man zeit-
  * abhängiges Verhalten ohne Fake Timers und ohne feste `sleep`-Pausen.
  */
@@ -31,10 +31,14 @@ describe('Toasts (Browser)', () => {
   });
 
   it('verschwindet nach Ablauf der Anzeigedauer von selbst', async () => {
-    notifications.notify('Gleich weg', 'info', 50);
+    // Früher: 50 ms. Das war FLAKY: Lief der Rechner unter Last (viele Tests
+    // parallel), war der Toast schon weg, bevor toBeVisible() ihn sehen konnte.
+    // Lehre: Zeitfenster in Browser-Tests großzügig wählen und die Wartezeit
+    // der Assertion (timeout) explizit darüber setzen.
+    notifications.notify('Gleich weg', 'info', 500);
 
     await expect.element(page.getByText('Gleich weg')).toBeVisible();
-    await expect.element(page.getByText('Gleich weg')).not.toBeInTheDocument();
+    await expect.element(page.getByText('Gleich weg'), { timeout: 3000 }).not.toBeInTheDocument();
   });
 
   it('Schließen-Button entfernt nur diesen Toast', async () => {
