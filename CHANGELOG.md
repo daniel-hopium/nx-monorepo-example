@@ -12,6 +12,11 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
 ## Unveröffentlicht
 
 ### Neu
+- `testing-lab`: eigene Komponenten für Button, Alert, Select, sortierbare Tabelle,
+  Bestätigungsdialog (Modal) und Tabs sowie Tests für die bisher ungetesteten Toasts.
+  Neue Seite „Komponenten“ zeigt alle Arten. Jede Art hat einen jsdom- und einen
+  Browser-Test; der Dialog nur im Browser, weil jsdom `showModal()` nicht kennt.
+  `TESTING.md` hat eine Übersicht, welcher Test was lehrt (86 jsdom-, 39 Browser-Tests).
 - Lern-App `testing-lab` (Aufgabenliste mit Formular, Filter, Statistik-Seite und
   Toasts) samt `TESTING.md`: 46 jsdom-Tests und 12 Browser-Tests zeigen reine
   Unit-Tests, Pipes, Services mit HttpTestingController, Fake Timers, Modul-Mocks

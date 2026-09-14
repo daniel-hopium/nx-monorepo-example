@@ -15,12 +15,34 @@ pnpm test:lab                        # beides
 | Stufe | Was | Läuft in | Dateien |
 | --- | --- | --- | --- |
 | 1 | Reine Funktionen, Pipes, Services | jsdom (Node) | `task.spec.ts`, `relative-time-pipe.spec.ts`, `notification-service.spec.ts`, `task-service.spec.ts` |
-| 2 | Komponenten mit TestBed | jsdom | `priority-badge.spec.ts`, `task-item.spec.ts`, `task-list-page.spec.ts`, `stats-page.spec.ts` |
+| 2 | Komponenten mit TestBed | jsdom | alle `ui/*.spec.ts` und `pages/*.spec.ts` ohne `.browser` |
 | 3 | Komponenten mit echten Eingaben | Chromium | `*.browser.spec.ts` |
 
 Faustregel: so tief wie möglich, so hoch wie nötig. Logik in reine
 Funktionen ziehen (Stufe 1), Komponenten schlank halten (Stufe 2), Browser
 nur für echte Interaktion, Fokus, CSS (Stufe 3).
+
+## Komponentenarten im Überblick
+
+Jede Art hat eine eigene Komponente unter `src/app/ui` und ist auf der Seite
+**/komponenten** zu sehen. Die Spalten zeigen, welcher Test was lehrt.
+
+| Art | Komponente | jsdom-Test lehrt | Browser-Test lehrt |
+| --- | --- | --- | --- |
+| Button | `button.ts` (Attribut-Selector) | Host-Komponente, Content Projection, `it.each` für Varianten, disabled und aria-busy | Enter und Leertaste klicken, Tab überspringt disabled, `toHaveFocus` |
+| Alert | `alert.ts` | ARIA-Rollen alert vs. status, `output<void>` mit `vi.fn` im Host | `getByRole('alert')`, aria-hidden-Icon, Schließen entfernt aus dem DOM |
+| Toast | `toasts.ts` | Service-Fake mit schreibbarem Signal, `mockReset`, aria-live | echter Service mit 50 ms Dauer, wartendes `not.toBeInTheDocument`, `position: fixed` |
+| Select | `select.ts` | Two-Way-Binding in beide Richtungen, `value` setzen und `change` feuern, label for/id | `userEvent.selectOptions` per Wert und per Text, `getByLabelText` |
+| Tabelle | `data-table.ts` (generisch) | Struktur-Helfer, Text- vs. Zahlensortierung, Klick-Zyklus, aria-sort, Leerzustand, `rowClick` | Rollen table/row/columnheader/cell, `nth()`, Sortieren per Tastatur |
+| Dialog/Modal | `confirm-dialog.ts` | **keiner**: jsdom kennt `showModal()` nicht | Öffnen, Fokus im Dialog, `:modal`, Bestätigen, Abbrechen, Escape, `expect.poll` |
+| Tabs | `tabs.ts` | `contentChildren`, aria-selected, roving tabindex, aria-controls | Pfeiltasten, Home/End, Wrap-around, Fokus |
+| Formular | `task-form.ts` | – | Validierungsmeldung, touched per Tab, Enter sendet ab |
+| Checkbox, Liste | `task-item.ts` | Inputs, Outputs, gemockte Clock, `By.css` | echtes CSS (line-through), Checkbox per Label |
+| Badge | `priority-badge.ts` | erster, einfachster Komponententest | – |
+
+**Wann jsdom, wann Browser?** jsdom für Struktur, Zustand und Klicks.
+Browser für Fokus, Tastatur, echtes CSS und alles, was jsdom nicht
+implementiert (Dialog, Layout, Scrollen).
 
 ## Anatomie eines Tests
 

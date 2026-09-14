@@ -12,5 +12,6 @@ export class App {
   protected readonly nav = [
     { label: 'Aufgaben', link: '/aufgaben' },
     { label: 'Statistik', link: '/statistik' },
+    { label: 'Komponenten', link: '/komponenten' },
   ];
 }
