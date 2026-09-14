@@ -1,6 +1,8 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, computed, output, signal } from '@angular/core';
 import { form, FormField, minLength, required } from '@angular/forms/signals';
 import { PRIORITIES, Priority } from '../data-access/task';
+
+let nextId = 0;
 
 export type NewTask = { title: string; priority: Priority; dueDate: string };
 
@@ -18,9 +20,22 @@ export type NewTask = { title: string; priority: Priority; dueDate: string };
     <form class="form" (submit)="submit($event)">
       <label>
         <span>Titel</span>
-        <input [formField]="f.title" placeholder="Was ist zu tun?" />
-        @if (f.title().touched() && f.title().errors().length) {
-          <span class="error" role="alert">{{ f.title().errors()[0].message }}</span>
+        <!--
+          Barrierefreiheit: aria-invalid markiert das Feld als ungültig,
+          aria-describedby verknüpft es mit der Meldung. Ein Screenreader liest
+          dann im Feld "Titel, ungültig, Titel ist Pflicht". Der Wert null entfernt
+          die Attribute ganz, solange kein Fehler angezeigt wird.
+          (Achtung: keine Backticks in diesem Kommentar, sie würden den
+          Template-String der Komponente beenden.)
+        -->
+        <input
+          [formField]="f.title"
+          placeholder="Was ist zu tun?"
+          [attr.aria-invalid]="showTitleError() || null"
+          [attr.aria-describedby]="showTitleError() ? titleErrorId : null"
+        />
+        @if (showTitleError()) {
+          <span class="error" role="alert" [id]="titleErrorId">{{ f.title().errors()[0].message }}</span>
         }
       </label>
       <label>
@@ -57,6 +72,14 @@ export class TaskForm {
     required(t.title, { message: 'Titel ist Pflicht' });
     minLength(t.title, 3, { message: 'Mindestens 3 Zeichen' });
   });
+
+  /** Eindeutige Id pro Formular-Instanz, sonst zeigt aria-describedby auf die falsche Meldung. */
+  protected readonly titleErrorId = `lab-task-title-error-${nextId++}`;
+
+  /** Eine Quelle für "Fehler sichtbar": Template-Anzeige und ARIA-Attribute bleiben synchron. */
+  protected readonly showTitleError = computed(
+    () => this.f.title().touched() && this.f.title().errors().length > 0
+  );
 
   protected submit(event: Event) {
     event.preventDefault();

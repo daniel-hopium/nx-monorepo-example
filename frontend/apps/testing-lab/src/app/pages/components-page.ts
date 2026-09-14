@@ -49,6 +49,7 @@ import { Tab, Tabs } from '../ui/tabs';
         [columns]="columns"
         [rows]="rows()"
         emptyText="Keine Aufgaben mit dieser Priorität"
+        [rowActionLabel]="openLabel"
         (rowClick)="notifications.notify('Zeile: ' + $event.title)"
       />
 
@@ -97,6 +98,9 @@ export class ComponentsPage {
     { key: 'dueDate', label: 'Termin', sortable: true },
     { key: 'done', label: 'Erledigt' },
   ];
+
+  /** Name der Zeilen-Aktion für Screenreader und Tastatur (siehe DataTable). */
+  protected readonly openLabel = (task: Task) => `${task.title} öffnen`;
 
   protected readonly rows = computed(() => {
     const priority = this.priority();

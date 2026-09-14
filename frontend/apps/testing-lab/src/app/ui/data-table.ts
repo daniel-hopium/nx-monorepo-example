@@ -33,7 +33,8 @@ export type SortState<T> = { key: keyof T & string; dir: 'asc' | 'desc' } | null
           @for (col of columns(); track col.key) {
             <th scope="col" [attr.aria-sort]="ariaSort(col.key)">
               @if (col.sortable) {
-                <button type="button" class="sort" (click)="toggleSort(col.key)">
+                <!-- aria-label: der Name sagt, WAS der Button tut. Die Richtung steht in aria-sort am <th>. -->
+                <button type="button" class="sort" [attr.aria-label]="col.label + ' sortieren'" (click)="toggleSort(col.key)">
                   {{ col.label }}
                   <span aria-hidden="true">{{ arrow(col.key) }}</span>
                 </button>
@@ -47,8 +48,28 @@ export type SortState<T> = { key: keyof T & string; dir: 'asc' | 'desc' } | null
       <tbody>
         @for (row of sortedRows(); track $index) {
           <tr (click)="rowClick.emit(row)">
-            @for (col of columns(); track col.key) {
-              <td>{{ row[col.key] }}</td>
+            @for (col of columns(); track col.key; let first = $first) {
+              <td>
+                @if (first && rowActionLabel(); as label) {
+                  <!--
+                    Echter Button für Tastatur und Screenreader. Das <tr> bleibt für
+                    Mausklicks auf die ganze Zeile klickbar. stopPropagation verhindert,
+                    dass ein Button-Klick zusätzlich über das <tr> ein zweites Mal meldet.
+                    Der Name ("Ada öffnen") enthält den sichtbaren Text ("Ada"), damit
+                    Sprachsteuerung per "Klicke Ada" funktioniert (WCAG 2.5.3).
+                  -->
+                  <button
+                    type="button"
+                    class="row-action"
+                    [attr.aria-label]="label(row)"
+                    (click)="$event.stopPropagation(); rowClick.emit(row)"
+                  >
+                    {{ row[col.key] }}
+                  </button>
+                } @else {
+                  {{ row[col.key] }}
+                }
+              </td>
             }
           </tr>
         } @empty {
@@ -67,6 +88,8 @@ export type SortState<T> = { key: keyof T & string; dir: 'asc' | 'desc' } | null
     tbody tr:hover { background: #f6f8fa; }
     .sort { font: inherit; color: inherit; border: 0; background: transparent; padding: 0; cursor: pointer; display: inline-flex; gap: 0.3rem; }
     .empty { text-align: center; color: #8c959f; padding: 1rem; }
+    .row-action { font: inherit; color: #1f3a93; background: transparent; border: 0; padding: 0; cursor: pointer; text-align: left; text-decoration: underline; }
+    .sort:focus-visible, .row-action:focus-visible { outline: 2px solid #1f3a93; outline-offset: 2px; border-radius: 2px; }
   `,
 })
 export class DataTable<T extends Record<string, unknown>> {
@@ -75,6 +98,13 @@ export class DataTable<T extends Record<string, unknown>> {
   readonly caption = input('');
   readonly emptyText = input('Keine Einträge');
   readonly rowClick = output<T>();
+  /**
+   * Barrierefreiheit: Name der Zeilen-Aktion, z. B. `(row) => row.name + ' öffnen'`.
+   * Ist er gesetzt, bekommt die erste Zelle einen fokussierbaren Button.
+   * Ohne ihn ist die Zeile nur per Maus klickbar, also für Tastatur-Nutzer
+   * unerreichbar. Wer `rowClick` nutzt, sollte diesen Input immer setzen.
+   */
+  readonly rowActionLabel = input<((row: T) => string) | undefined>(undefined);
 
   /** Interner Zustand, aber öffentlich lesbar, damit Tests ihn prüfen können. */
   readonly sort = signal<SortState<T>>(null);

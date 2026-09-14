@@ -124,6 +124,51 @@ await expect.element(page.getByRole('alert')).toHaveTextContent('Titel ist Pflic
 - Dateien heißen `*.browser.spec.ts` und laufen über
   `vite.browser.config.mts`; die jsdom-Konfiguration schließt sie aus.
 
+## Barrierefreiheit (a11y) testen
+
+Die Dateien `*.a11y.browser.spec.ts` prüfen gezielt Barrierefreiheit. Sie
+laufen im Browser, weil nur dort Fokus und Accessible Names echt berechnet werden.
+
+| Datei | Prüft |
+| --- | --- |
+| `task-item.a11y.browser.spec.ts` | exakte Namen von Checkbox und Icon-Button, eindeutige Namen bei mehreren Zeilen, Tab-Reihenfolge, Leertaste, sichtbarer Fokusring |
+| `task-form.a11y.browser.spec.ts` | Feldnamen aus Labels, `aria-invalid` erst nach dem Verlassen, Fehlermeldung als Accessible Description |
+| `data-table.a11y.browser.spec.ts` | Tabellenname aus `<caption>`, Name des Sortier-Buttons, Zeilen-Aktion per Tab und Enter erreichbar |
+
+Die zwei Leitfragen:
+
+1. **Ist alles per Tastatur erreichbar und bedienbar?** Wirklich durchtabben
+   (`userEvent.keyboard('{Tab}')`) und mit `toHaveFocus()` prüfen, wo der Fokus
+   landet. Dann mit Enter oder Leertaste bedienen.
+2. **Hat jedes Element den richtigen Namen?** `toHaveAccessibleName('…')` prüft
+   den exakten Namen, den ein Screenreader vorliest.
+   `getByRole('button', { name: 'Löschen' })` allein reicht nicht, weil es
+   auch Teiltreffer wie „Löschen: Einkaufen“ findet.
+
+| Matcher | Prüft |
+| --- | --- |
+| `toHaveAccessibleName('…')` | Name aus `aria-label`, `aria-labelledby`, `<label>` oder Text |
+| `toHaveAccessibleDescription('…')` | Beschreibung aus `aria-describedby`, z. B. Fehlermeldungen |
+| `toHaveFocus()` | Fokus liegt auf dem Element |
+| `toHaveAttribute('aria-…', '…')` | ARIA-Zustände wie `aria-invalid`, `aria-sort`, `aria-selected` |
+
+**Was die Tests gefunden haben.** Die a11y-Tests wurden zuerst geschrieben und
+schlugen fünfmal fehl, bevor die Komponenten angepasst wurden:
+
+- Tabellenzeilen waren nur per Maus klickbar. Lösung: der Input
+  `rowActionLabel` rendert einen echten Button in der ersten Zelle.
+- Der Sortier-Button hieß nur „Name“. Jetzt heißt er „Name sortieren“, die
+  Richtung steht in `aria-sort`.
+- Das Titelfeld zeigte Fehler nur visuell. Jetzt setzt es `aria-invalid` und
+  verknüpft die Meldung per `aria-describedby`.
+
+Vorgehen zum Merken: **a11y-Test schreiben, rot sehen, Komponente fixen, grün sehen.**
+
+Nicht abgedeckt sind Farbkontraste und automatische Regelprüfungen. Dafür gibt
+es `axe-core`, das eine ganze Seite gegen die WCAG-Regeln prüft. Es ergänzt
+diese Tests, ersetzt sie aber nicht: axe erkennt einen fehlenden Namen, aber
+nicht, ob „Löschen“ der richtige Name ist oder ob die Tab-Reihenfolge sinnvoll ist.
+
 ## Typische Fehler
 
 - **"NG0950: Input is required"**: `setInput` fehlt oder kommt zu spät.

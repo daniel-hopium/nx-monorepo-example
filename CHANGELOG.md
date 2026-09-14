@@ -12,6 +12,10 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
 ## Unveröffentlicht
 
 ### Neu
+- `testing-lab`: Barrierefreiheits-Tests (`*.a11y.browser.spec.ts`) für Listenzeile,
+  Formular und Tabelle. Sie prüfen Tastaturbedienung, Tab-Reihenfolge, sichtbaren
+  Fokus sowie exakte Accessible Names und Descriptions. `TESTING.md` erklärt das
+  Vorgehen und die Matcher.
 - `testing-lab`: eigene Komponenten für Button, Alert, Select, sortierbare Tabelle,
   Bestätigungsdialog (Modal) und Tabs sowie Tests für die bisher ungetesteten Toasts.
   Neue Seite „Komponenten“ zeigt alle Arten. Jede Art hat einen jsdom- und einen
@@ -42,6 +46,14 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
   Anlegen, Ändern und Löschen.
 - Spring-Boot-Backend (Port 5200) mit denselben Endpunkten in klassischer
   MVC-Schichtung (Controller, Service, Repository) zum Vergleich mit Express.
+
+### Behoben
+- `testing-lab`, Tabelle: klickbare Zeilen waren per Tastatur nicht erreichbar. Mit dem
+  neuen Input `rowActionLabel` bekommt die erste Zelle einen fokussierbaren Button.
+- `testing-lab`, Tabelle: Sortier-Buttons heißen jetzt „<Spalte> sortieren“ statt nur
+  „<Spalte>“.
+- `testing-lab`, Formular: das Titelfeld meldet Fehler jetzt auch an Screenreader
+  (`aria-invalid`, Meldung per `aria-describedby` verknüpft).
 
 ### Intern
 - `@vitest/browser` als devDependency, damit `import { page, userEvent } from 'vitest/browser'`

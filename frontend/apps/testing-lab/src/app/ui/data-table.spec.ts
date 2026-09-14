@@ -44,8 +44,10 @@ describe('DataTable', () => {
 
   // --- Helfer ---
   const headers = () => Array.from(el.querySelectorAll('th')).map((th) => th.textContent?.trim());
+  // trim(): textContent enthält Zeilenumbrüche und Leerzeichen aus dem Template
+  // (z. B. rund um @if). Für den Test zählt nur der sichtbare Text.
   const column = (index: number) =>
-    Array.from(el.querySelectorAll('tbody tr')).map((tr) => tr.querySelectorAll('td')[index]?.textContent);
+    Array.from(el.querySelectorAll('tbody tr')).map((tr) => tr.querySelectorAll('td')[index]?.textContent?.trim());
   const header = (label: string) =>
     Array.from(el.querySelectorAll('th')).find((th) => th.textContent?.includes(label)) as HTMLTableCellElement;
   const clickHeader = async (label: string) => {
