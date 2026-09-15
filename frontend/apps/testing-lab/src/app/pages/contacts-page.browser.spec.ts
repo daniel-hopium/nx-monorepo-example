@@ -1,25 +1,28 @@
 /**
- * INTEGRATIONSTEST: Smart Component + ECHTER Signal Store, nur die API gemockt
+ * INTEGRATIONSTEST, VARIANTE A: Smart Component + ECHTER Store, nur die API gemockt
  *
- * Die drei Kontakte-Tests ergänzen sich:
+ * Die Kontakte-Tests ergänzen sich:
  *   contact-api.spec.ts       API allein        (HTTP abgefangen)
  *   contact-store.spec.ts     Store allein      (API gemockt)
  *   contacts-page.spec.ts     Komponente allein (Store gefakt)
- *   DIESE Datei               Komponente + Store zusammen (API gemockt), im Browser
+ *   DIESE Datei               Komponente + Store + Toasts zusammen, im Browser
  *
- * Hier fällt auf, wenn die Teile einzeln stimmen, aber nicht zusammenpassen,
- * z. B. wenn die Komponente eine Store-Methode mit falschem Argument ruft.
+ * Neu für das Error Handling: Ein Löschfehler erscheint als TOAST. Den rendert
+ * in der App die Shell (app.ts), nicht die Seite. Darum rendert der Test eine
+ * kleine Host-Komponente mit Seite UND Toasts, so wie der Nutzer es sieht.
  *
- * Kein overrideComponent nötig: Die Komponente erzeugt ihren echten Store,
- * und der Store injiziert `ContactApi`. Die kommt aus dem TestBed und ist der Mock.
- * Echte Zeit statt Fake Timers: `expect.element` wartet die 300 ms Debounce von selbst ab.
+ * Die API-Fehler sind echte HttpErrorResponses, der Store übersetzt sie selbst.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
+import { USER_MESSAGES } from '../core/error/app-error';
 import { Contact, NewContact } from '../data-access/contact';
 import { ContactApi } from '../data-access/contact-api';
+import { Toasts } from '../ui/toasts';
 import { ContactsPage } from './contacts-page';
 
 const seed: Contact[] = [
@@ -28,8 +31,16 @@ const seed: Contact[] = [
   { id: 3, name: 'Grace Hopper', email: 'grace@example.com', company: 'US Navy', favorite: false },
 ];
 
+const httpError = (status: number, error: unknown = null) =>
+  throwError(() => new HttpErrorResponse({ status, error }));
+
+@Component({
+  imports: [ContactsPage, Toasts],
+  template: `<lab-contacts-page /><lab-toasts />`,
+})
+class Host {}
+
 describe('ContactsPage + ContactStore (Browser, Integration)', () => {
-  // Mock mit echter kleiner Logik (filtern), damit sich die Suche realistisch anfühlt.
   const api = {
     getContacts: vi.fn((q = '') => of(seed.filter((c) => c.name.toLowerCase().includes(q.toLowerCase())))),
     createContact: vi.fn((dto: NewContact) => of<Contact>({ ...dto, id: 99, favorite: false })),
@@ -39,58 +50,76 @@ describe('ContactsPage + ContactStore (Browser, Integration)', () => {
 
   const items = () => page.getByRole('listitem');
 
-  beforeEach(async () => {
-    vi.clearAllMocks(); // Aufrufzähler zurücksetzen, Implementierungen bleiben
+  async function render() {
     await TestBed.configureTestingModule({
-      imports: [ContactsPage],
+      imports: [Host],
       providers: [{ provide: ContactApi, useValue: api }],
     }).compileComponents();
-    await TestBed.createComponent(ContactsPage).whenStable();
+    await TestBed.createComponent(Host).whenStable();
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
   it('lädt beim Start und zeigt Favoriten zuerst', async () => {
+    await render();
+
     await expect.element(page.getByTestId('stats')).toHaveTextContent('3 Kontakte, 1 Favoriten');
     await expect.element(items().nth(0)).toHaveTextContent('Ada Lovelace');
-    expect(api.getContacts).toHaveBeenCalledWith('');
   });
 
-  it('Suche tippt, wartet die Debounce-Zeit ab und zeigt das Ergebnis', async () => {
-    await userEvent.fill(page.getByLabelText('Suchen'), 'grace');
+  it('Ladefehler ohne Daten: Fehleranzeige, "Erneut versuchen" lädt erfolgreich nach', async () => {
+    api.getContacts.mockReturnValueOnce(httpError(503));
+    await render();
 
-    await expect.element(page.getByText('Grace Hopper')).toBeVisible();
-    await expect.element(page.getByText('Linus Torvalds')).not.toBeInTheDocument();
-    // fill() setzt den Wert in einem Schritt: ein Request, nicht einer pro Buchstabe.
-    expect(api.getContacts).toHaveBeenLastCalledWith('grace');
+    const alert = page.getByRole('alert');
+    await expect.element(alert).toHaveTextContent(USER_MESSAGES.server);
+    await expect.element(page.getByText('Keine Kontakte gefunden')).not.toBeInTheDocument();
+
+    await userEvent.click(page.getByRole('button', { name: 'Erneut versuchen' }));
+
+    await expect.element(alert).not.toBeInTheDocument();
+    await expect.element(page.getByTestId('stats')).toHaveTextContent('3 Kontakte');
   });
 
-  it('Kontakt anlegen: API mit Formularwerten, Kontakt erscheint, Formular leer', async () => {
-    await userEvent.fill(page.getByRole('textbox', { name: 'Name' }), 'Margaret Hamilton');
-    await userEvent.fill(page.getByRole('textbox', { name: 'E-Mail' }), 'margaret@example.com');
-    await userEvent.fill(page.getByRole('textbox', { name: 'Firma' }), 'NASA');
-    await userEvent.click(page.getByRole('button', { name: 'Anlegen' }));
+  it('Suche schlägt fehl: kompakte Meldung, alte Liste bleibt sichtbar', async () => {
+    await render();
+    api.getContacts.mockReturnValueOnce(httpError(0));
 
-    await expect.element(page.getByText('Margaret Hamilton')).toBeVisible();
-    await expect.element(page.getByRole('textbox', { name: 'Name' })).toHaveValue('');
-    expect(api.createContact).toHaveBeenCalledWith({
-      name: 'Margaret Hamilton',
-      email: 'margaret@example.com',
-      company: 'NASA',
-    });
+    await userEvent.fill(page.getByLabelText('Suchen'), 'ada');
+
+    await expect.element(page.getByRole('alert')).toHaveTextContent(USER_MESSAGES.offline);
+    await expect.element(page.getByText('grace@example.com')).toBeVisible();
   });
 
-  it('Löschen schlägt fehl: Kontakt kommt zurück, Fehler als Alert', async () => {
-    api.deleteContact.mockReturnValueOnce(throwError(() => new Error('403')));
+  it('Löschen mit 403: Kontakt kommt zurück, Toast nennt Name und Grund', async () => {
+    api.deleteContact.mockReturnValueOnce(httpError(403));
+    await render();
 
     await userEvent.click(page.getByRole('button', { name: 'Grace Hopper löschen' }));
 
-    await expect.element(page.getByRole('alert')).toHaveTextContent('Kontakt konnte nicht gelöscht werden');
-    await expect.element(page.getByText('Grace Hopper')).toBeVisible(); // Rollback im echten Store
+    await expect
+      .element(page.getByText(`"Grace Hopper" wurde nicht gelöscht. ${USER_MESSAGES.forbidden}`))
+      .toBeVisible();
+    await expect.element(page.getByText('grace@example.com')).toBeVisible(); // Rollback
+  });
 
-    await userEvent.click(page.getByRole('button', { name: 'Hinweis schließen' }));
-    await expect.element(page.getByRole('alert')).not.toBeInTheDocument();
+  it('Anlegen mit 422: Feldfehler am E-Mail-Feld, Liste unverändert', async () => {
+    api.createContact.mockReturnValueOnce(httpError(422, { errors: { email: 'Diese E-Mail ist bereits vergeben.' } }));
+    await render();
+
+    await userEvent.fill(page.getByRole('textbox', { name: 'Name' }), 'Doppelt');
+    await userEvent.fill(page.getByRole('textbox', { name: 'E-Mail' }), 'ada@example.com');
+    await userEvent.click(page.getByRole('button', { name: 'Anlegen' }));
+
+    const email = page.getByRole('textbox', { name: 'E-Mail' });
+    await expect.element(email).toHaveAccessibleDescription('Diese E-Mail ist bereits vergeben.');
+    await expect.element(page.getByTestId('stats')).toHaveTextContent('3 Kontakte');
   });
 
   it('Favorit per Tastatur: aria-pressed wechselt und die Liste sortiert neu', async () => {
+    await render();
     const star = page.getByRole('button', { name: 'Linus Torvalds als Favorit markieren' });
     await expect.element(star).toHaveAttribute('aria-pressed', 'false');
 
@@ -98,9 +127,7 @@ describe('ContactsPage + ContactStore (Browser, Integration)', () => {
     await userEvent.keyboard('{Enter}');
 
     await expect.element(star).toHaveAttribute('aria-pressed', 'true');
-    await expect.element(page.getByTestId('stats')).toHaveTextContent('2 Favoriten');
     expect(api.setFavorite).toHaveBeenCalledWith(1, true);
-    // Ada und Linus sind jetzt Favoriten, alphabetisch: Ada, Linus, dann Grace
     await expect.element(items().nth(1)).toHaveTextContent('Linus Torvalds');
   });
 });

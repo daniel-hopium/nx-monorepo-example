@@ -12,6 +12,16 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
 ## Unveröffentlicht
 
 ### Neu
+- `testing-lab`: Error Handling nach Senior-Muster in zwei Varianten. Die Seite
+  „Kontakte“ lädt klassisch mit `rxMethod`, die neue Seite „Kontakte (Resource)“ mit
+  `httpResource`. Beide zeigen Ladefehler inline mit „Erneut versuchen“, behalten alte
+  Daten sichtbar, zeigen Serverfeldfehler (422) direkt am Formularfeld und rollen
+  fehlgeschlagene Lösch- und Favoriten-Aktionen mit Toast zurück.
+- `testing-lab`: gemeinsames Fehlermodell `AppError`, HTTP-Interceptor mit Timeout und
+  Retry mit Exponential Backoff (nur für GET), globaler ErrorHandler und Fehlerseite bei
+  scheiternder Navigation. Das Mock-Backend erzeugt Fehler über bestimmte Eingaben, die
+  Seite listet sie unter „Fehlerfälle ausprobieren“. `ERROR-HANDLING.md` erklärt Aufbau
+  und Entscheidungen. Neue Tests für alle Ebenen (167 jsdom-, 78 Browser-Tests).
 - `testing-lab`: Seite „Kontakte“ als Smart Component mit NgRx Signal Store (Suche mit
   Debounce, Anlegen, optimistisches Löschen und Favorisieren mit Rollback). Der Store ruft
   einen API-Service; im Browser beantwortet ein Fake-Backend-Interceptor die Requests.
@@ -63,6 +73,11 @@ Kategorien: **Neu** (neue Funktionen), **Verbessert** (bestehendes Verhalten), *
   (`aria-invalid`, Meldung per `aria-describedby` verknüpft).
 
 ### Intern
+- Screenshots fehlgeschlagener Browser-Tests (`__screenshots__/`, `.vitest-attachments/`) werden ignoriert; versehentlich
+  eingecheckte Fehler-Screenshots sind entfernt.
+- `testing-lab`: Kontaktliste und -formular sind jetzt eigene Präsentationskomponenten,
+  die beide Kontakte-Seiten teilen. Store-Befehle liefern `Result` statt `boolean`,
+  der alte Freitext-Fehlerzustand (`error`, `clearError`) entfällt.
 - `@vitest/browser` als devDependency, damit `import { page, userEvent } from 'vitest/browser'`
   typisiert ist. `testing-lab` nutzt Vitest (Analog-Plugin) auch für die jsdom-Tests,
   mit getrennten Konfigurationen `vite.config.mts` und `vite.browser.config.mts`.

@@ -1,5 +1,5 @@
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { HttpClient, httpResource, HttpResourceRef } from '@angular/common/http';
+import { inject, Injectable, Resource } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Contact, NewContact } from './contact';
 
@@ -19,6 +19,29 @@ import { Contact, NewContact } from './contact';
 export class ContactApi {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = '/api/contacts';
+
+  /**
+   * RESOURCE-VARIANTE des Lesens (für ContactResourceStore).
+   *
+   * `httpResource` lädt automatisch neu, sobald sich ein gelesenes Signal ändert,
+   * und bricht den alten Request dabei ab (wie switchMap, nur eingebaut).
+   * Es läuft über denselben HttpClient, also auch durch den Error-Interceptor.
+   *
+   * `ctx.chain(query)` hängt diese Resource an die (entprellte) Such-Resource:
+   * Solange die Suche noch "wartet", ist auch diese Resource im Status loading.
+   * Wirft die Such-Resource einen Fehler, übernimmt diese ihn.
+   *
+   * Muss im Injection Context aufgerufen werden (z. B. in withProps eines Stores),
+   * weil httpResource sich an dessen Lebensdauer bindet.
+   */
+  contactsResource(query: Resource<string>): HttpResourceRef<Contact[] | undefined> {
+    return httpResource<Contact[]>((ctx) => {
+      const q = ctx.chain(query);
+      // Expliziter Typ: sonst inferiert TS `{ q?: undefined }` und httpResource lehnt ab.
+      const params: Record<string, string> = q ? { q } : {};
+      return { url: this.baseUrl, params };
+    });
+  }
 
   getContacts(query = ''): Observable<Contact[]> {
     // Leere Suche nicht als ?q= mitschicken, das hält die URL sauber.

@@ -3,6 +3,9 @@
 Diese App ist ein Lernprojekt. Die Website ist bewusst klein (Aufgabenliste
 mit Formular, Filter und Statistik), damit der Fokus auf den Tests liegt.
 
+Wie Fehler behandelt und getestet werden (AppError, Interceptor, Resource API
+vs. rxMethod), erklärt [ERROR-HANDLING.md](ERROR-HANDLING.md).
+
 ```bash
 pnpm start:lab                       # App auf http://localhost:4400
 pnpm nx test testing-lab             # Unit- und Komponententests (jsdom, schnell)

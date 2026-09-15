@@ -14,5 +14,6 @@ export class App {
     { label: 'Statistik', link: '/statistik' },
     { label: 'Komponenten', link: '/komponenten' },
     { label: 'Kontakte', link: '/kontakte' },
+    { label: 'Kontakte (Resource)', link: '/kontakte-resource' },
   ];
 }

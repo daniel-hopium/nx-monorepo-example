@@ -2,24 +2,26 @@
  * SMART COMPONENT MIT SIGNAL STORE TESTEN (jsdom, Store gefakt)
  *
  * Frage dieses Tests: Verbindet die Komponente Store und Template RICHTIG?
- *   - Zeigt sie an, was im Store steht? (Signale -> DOM)
+ *   - Zeigt sie für jeden Zustand die richtige Anzeige? (Signale -> DOM)
  *   - Ruft sie bei Nutzeraktionen die richtige Store-Methode? (DOM -> Methoden)
  * Die Logik des Stores ist hier egal, die ist in contact-store.spec.ts getestet.
  *
- * Der Store wird durch ein Fake-Objekt ersetzt: schreibbare Signale statt
- * echtem Zustand, vi.fn() statt echter Methoden. Der Test kann so jeden
- * Zustand direkt einstellen (loading, error, leere Liste …).
+ * Gerade beim Error Handling lohnt dieser Test: die vier Zustände
+ * (erstes Laden, Fehler ohne Daten, Fehler mit alten Daten, leer) lassen sich
+ * mit einem Fake-Store in einer Zeile einstellen. Mit echtem Store und HTTP
+ * wäre jeder davon mühsam herzustellen.
  *
  * DER WICHTIGSTE PUNKT: Die Komponente hat `providers: [ContactStore]`.
- * Ein Provider im TestBed würde dagegen verlieren, weil Angular zuerst im
- * Injector der Komponente sucht. Deshalb:
+ * Ein Provider im TestBed würde verlieren, weil Angular zuerst im Injector der
+ * Komponente sucht. Deshalb:
  *   TestBed.overrideComponent(ContactsPage, { set: { providers: [...] } })
- * ersetzt die Provider direkt an der Komponente.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Contact } from '../data-access/contact';
+import { AppError, USER_MESSAGES } from '../core/error/app-error';
+import { ok } from '../core/error/result';
+import { Contact, NewContact } from '../data-access/contact';
 import { ContactStore } from '../data-access/contact-store';
 import { ContactsPage } from './contacts-page';
 
@@ -33,16 +35,16 @@ function createStoreFake() {
   return {
     sortedContacts: signal<Contact[]>(contacts),
     query: signal(''),
-    loading: signal(false),
-    saving: signal(false),
-    error: signal<string | null>(null),
+    isLoading: signal(false),
+    isEmpty: signal(false),
+    loadError: signal<AppError | null>(null),
     total: signal(2),
     favoriteCount: signal(1),
     search: vi.fn(),
-    add: vi.fn<(dto: unknown) => Promise<boolean>>().mockResolvedValue(true),
+    retry: vi.fn(),
+    add: vi.fn((dto: NewContact) => Promise.resolve(ok<Contact>({ ...dto, id: 9, favorite: false }))),
     remove: vi.fn(),
     toggleFavorite: vi.fn(),
-    clearError: vi.fn(),
   };
 }
 
@@ -66,30 +68,29 @@ describe('ContactsPage (jsdom, Store gefakt)', () => {
   });
 
   // --- Helfer ---
-  const names = () => Array.from(el.querySelectorAll('.contact .name')).map((n) => n.textContent);
+  const names = () => Array.from(el.querySelectorAll('.contact .name')).map((n) => n.textContent?.trim());
   const button = (label: string) => el.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement;
-  const formInput = (label: string) =>
-    Array.from(el.querySelectorAll('form label'))
-      .find((l) => l.querySelector('span')?.textContent === label)
-      ?.querySelector('input') as HTMLInputElement;
-  const type = (input: HTMLInputElement, value: string) => {
-    input.value = value;
-    input.dispatchEvent(new Event('input')); // FormField hört auf "input"
-  };
+  const buttonByText = (text: string) =>
+    Array.from(el.querySelectorAll('button')).find((b) => b.textContent?.trim() === text);
+  const alert = () => el.querySelector('lab-error-state [role=alert]');
   const render = () => fixture.whenStable();
 
-  describe('Store -> Template', () => {
-    it('zeigt die Kontakte in der Reihenfolge von sortedContacts', () => {
+  /** Zustand "Liste leer" herstellen: Fake-Signale passend zueinander setzen. */
+  const withoutContacts = () => {
+    store.sortedContacts.set([]);
+    store.total.set(0);
+  };
+
+  describe('Anzeige je Zustand', () => {
+    it('geladen: Kontakte in der Reihenfolge von sortedContacts und Zähler', () => {
       expect(names()).toEqual(['Ada', 'Linus']);
+      expect(el.querySelector('[data-testid=stats]')?.textContent?.trim()).toBe('2 Kontakte, 1 Favoriten');
+      expect(alert()).toBeNull();
     });
 
-    it('zeigt die Zähler aus den computed-Signalen', () => {
-      expect(el.querySelector('[data-testid=stats]')?.textContent).toBe('2 Kontakte, 1 Favoriten');
-    });
-
-    it('Ladezustand: Hinweis sichtbar, kein "Keine Kontakte"', async () => {
-      store.sortedContacts.set([]);
-      store.loading.set(true);
+    it('erstes Laden: Ladehinweis, kein Leerzustand, Liste aria-busy', async () => {
+      withoutContacts();
+      store.isLoading.set(true);
       await render();
 
       expect(el.textContent).toContain('Lade Kontakte');
@@ -97,29 +98,64 @@ describe('ContactsPage (jsdom, Store gefakt)', () => {
       expect(el.querySelector('.list')?.getAttribute('aria-busy')).toBe('true');
     });
 
-    it('leere Liste ohne Laden zeigt den Leerzustand', async () => {
-      store.sortedContacts.set([]);
+    it('leer nach Erfolg: Leerzustand', async () => {
+      withoutContacts();
+      store.isEmpty.set(true);
       await render();
+
       expect(el.textContent).toContain('Keine Kontakte gefunden');
     });
 
-    it('ein Fehler im Store erscheint als Alert', async () => {
-      store.error.set('Kontakte konnten nicht geladen werden');
+    it('Fehler ohne Daten: große Fehleranzeige mit Titel und Nutzer-Meldung', async () => {
+      withoutContacts();
+      store.loadError.set(new AppError('server'));
       await render();
 
-      const alert = el.querySelector('[role=alert]');
-      expect(alert?.textContent).toContain('Kontakte konnten nicht geladen werden');
+      expect(alert()?.textContent).toContain('Kontakte konnten nicht geladen werden');
+      expect(alert()?.textContent).toContain(USER_MESSAGES.server);
+      expect(el.querySelector('.error-state')?.classList).not.toContain('compact');
     });
 
-    it('Favoriten-Button spiegelt den Zustand in aria-pressed', () => {
-      expect(button('Ada als Favorit markieren').getAttribute('aria-pressed')).toBe('true');
-      expect(button('Linus als Favorit markieren').getAttribute('aria-pressed')).toBe('false');
+    it('Fehler mit alten Daten: kompakte Anzeige, Liste bleibt sichtbar', async () => {
+      store.loadError.set(new AppError('offline'));
+      await render();
+
+      expect(el.querySelector('.error-state')?.classList).toContain('compact');
+      expect(names()).toEqual(['Ada', 'Linus']);
+    });
+
+    it('Retry-Button nur bei wiederholbaren Fehlern (403 wird durch Wiederholen nicht besser)', async () => {
+      store.loadError.set(new AppError('forbidden'));
+      await render();
+
+      expect(alert()?.textContent).toContain(USER_MESSAGES.forbidden);
+      expect(buttonByText('Erneut versuchen')).toBeUndefined();
     });
   });
 
   describe('Template -> Store-Methoden', () => {
+    it('"Erneut versuchen" ruft store.retry', async () => {
+      store.loadError.set(new AppError('server'));
+      await render();
+
+      buttonByText('Erneut versuchen')?.click();
+
+      expect(store.retry).toHaveBeenCalledOnce();
+    });
+
+    it('während des erneuten Ladens zeigt der Retry-Button den Ladezustand', async () => {
+      store.loadError.set(new AppError('server'));
+      store.isLoading.set(true);
+      await render();
+
+      expect(buttonByText('Erneut versuchen')?.getAttribute('aria-busy')).toBe('true');
+    });
+
     it('Eingabe im Suchfeld ruft search mit dem Text', () => {
-      type(el.querySelector('#contact-search') as HTMLInputElement, 'gra');
+      const input = el.querySelector('#contact-search') as HTMLInputElement;
+      input.value = 'gra';
+      input.dispatchEvent(new Event('input'));
+
       expect(store.search).toHaveBeenCalledWith('gra');
     });
 
@@ -131,66 +167,24 @@ describe('ContactsPage (jsdom, Store gefakt)', () => {
       expect(store.remove).toHaveBeenCalledExactlyOnceWith(2);
     });
 
-    it('Alert schließen ruft clearError', async () => {
-      store.error.set('Kaputt');
-      await render();
-
-      button('Hinweis schließen').click();
-
-      expect(store.clearError).toHaveBeenCalledOnce();
-    });
-  });
-
-  describe('Formular', () => {
-    const submitButton = () => el.querySelector('form button[type=submit]') as HTMLButtonElement;
-
-    it('Anlegen ist gesperrt, bis Name und gültige E-Mail da sind', async () => {
-      expect(submitButton().disabled).toBe(true);
-
-      type(formInput('Name'), 'Grace');
-      type(formInput('E-Mail'), 'keine-mail');
-      await render();
-      expect(submitButton().disabled).toBe(true); // E-Mail ungültig
-
-      type(formInput('E-Mail'), 'grace@example.com');
-      await render();
-      expect(submitButton().disabled).toBe(false);
-    });
-
-    it('Absenden ruft add mit den Werten und leert das Formular bei Erfolg', async () => {
-      type(formInput('Name'), 'Grace');
-      type(formInput('E-Mail'), 'grace@example.com');
-      type(formInput('Firma'), 'Navy');
+    it('das Formular speichert über store.add', async () => {
+      const type = (label: string, value: string) => {
+        const labelEl = Array.from(el.querySelectorAll('lab-contact-form label')).find(
+          (l) => l.textContent?.trim() === label
+        );
+        const input = el.querySelector(`#${labelEl?.getAttribute('for')}`) as HTMLInputElement;
+        input.value = value;
+        input.dispatchEvent(new Event('input'));
+      };
+      type('Name', 'Grace');
+      type('E-Mail', 'grace@example.com');
       await render();
 
       el.querySelector('form')?.dispatchEvent(new Event('submit'));
 
-      expect(store.add).toHaveBeenCalledWith({ name: 'Grace', email: 'grace@example.com', company: 'Navy' });
-      // submit ist async (wartet auf add). vi.waitFor wiederholt die Prüfung,
-      // bis sie klappt oder ein Timeout greift, statt sofort zu scheitern.
-      await vi.waitFor(async () => {
-        await render();
-        expect(formInput('Name').value).toBe('');
-      });
-    });
-
-    it('bei Fehlschlag bleibt die Eingabe erhalten', async () => {
-      store.add.mockResolvedValue(false);
-      type(formInput('Name'), 'Grace');
-      type(formInput('E-Mail'), 'grace@example.com');
-      await render();
-
-      el.querySelector('form')?.dispatchEvent(new Event('submit'));
-      await store.add.mock.results[0].value; // auf das Promise des Mocks warten
-      await render();
-
-      expect(formInput('Name').value).toBe('Grace');
-    });
-
-    it('der Button zeigt den Speicherzustand des Stores', async () => {
-      store.saving.set(true);
-      await render();
-      expect(submitButton().getAttribute('aria-busy')).toBe('true');
+      await vi.waitFor(() =>
+        expect(store.add).toHaveBeenCalledWith({ name: 'Grace', email: 'grace@example.com', company: '' })
+      );
     });
   });
 });

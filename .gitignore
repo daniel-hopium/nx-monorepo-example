@@ -60,3 +60,6 @@ target/
 *.ipr
 
 vitest.config.*.timestamp*
+# Vitest Browser Mode: Screenshots fehlgeschlagener Tests (Artefakte, keine Baselines)
+__screenshots__/
+.vitest-attachments/

@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { NotificationService } from '../data-access/notification-service';
 import { TaskService } from '../data-access/task-service';
 import { Task } from '../data-access/task';
@@ -15,7 +16,7 @@ import { Tab, Tabs } from '../ui/tabs';
  * *.browser.spec.ts); diese Seite dient nur zum Anschauen und Ausprobieren.
  */
 @Component({
-  imports: [Alert, Button, ConfirmDialog, DataTable, Select, Tabs, Tab],
+  imports: [Alert, Button, ConfirmDialog, DataTable, RouterLink, Select, Tabs, Tab],
   template: `
     <section class="card">
       <h1>Komponenten</h1>
@@ -52,6 +53,14 @@ import { Tab, Tabs } from '../ui/tabs';
         [rowActionLabel]="openLabel"
         (rowClick)="notifications.notify('Zeile: ' + $event.title)"
       />
+
+      <h2>Globale Fehlerbehandlung</h2>
+      <div class="row">
+        <!-- Wirft im Click-Handler: landet beim GlobalErrorHandler (Log + Toast). -->
+        <button labButton variant="danger" (click)="throwUnexpected()">Unerwarteten Fehler auslösen</button>
+        <!-- Resolver wirft: withNavigationErrorHandler leitet auf die Fehlerseite. -->
+        <a routerLink="/kaputt">Kaputte Route öffnen</a>
+      </div>
 
       <h2>Tabs</h2>
       <lab-tabs ariaLabel="Beispiel-Reiter">
@@ -110,6 +119,11 @@ export class ComponentsPage {
 
   constructor() {
     if (this.taskService.tasks().length === 0) this.taskService.load();
+  }
+
+  /** Simuliert einen Programmierfehler, den niemand abfängt. */
+  protected throwUnexpected(): never {
+    throw new Error('Absichtlich ausgelöster Fehler aus der Komponenten-Seite');
   }
 
   protected simulateSave() {

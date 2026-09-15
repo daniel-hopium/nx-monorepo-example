@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { ContactStore } from '../data-access/contact-store';
+import { ContactResourceStore } from '../data-access/contact-resource-store';
 import { NewContact } from '../data-access/contact';
 import { ContactForm } from '../ui/contact-form';
 import { ContactList } from '../ui/contact-list';
@@ -7,27 +7,21 @@ import { ErrorDemoHints } from '../ui/error-demo-hints';
 import { ErrorState } from '../ui/error-state';
 
 /**
- * Smart Component, VARIANTE A (klassischer Store mit rxMethod).
- * Die Resource-Variante (contacts-resource-page.ts) hat bewusst dasselbe
- * Template; nur der Store ist ein anderer.
- *
- * Die vier Zustände einer Datenliste, jeweils mit eigener Anzeige:
- *   erstes Laden          -> "Lade Kontakte…"
- *   Fehler, keine Daten   -> große Fehleranzeige mit "Erneut versuchen"
- *   Fehler, alte Daten    -> kompakte Fehleranzeige ÜBER der weiter sichtbaren Liste
- *   geladen, aber leer    -> "Keine Kontakte gefunden" (nur nach Erfolg, nie nach Fehler)
- *
- * `providers: [ContactStore]`: eine Store-Instanz pro Seite. Im Test muss der
- * Store deshalb per `TestBed.overrideComponent` ersetzt werden.
+ * Smart Component, VARIANTE B (Signal Store mit Resource API).
+ * Template fast identisch mit contacts-page.ts. Unterschiede:
+ *   - `store.error()` kommt direkt aus der Resource statt aus eigenem State
+ *   - `store.isInitialLoading()` unterscheidet erstes Laden vom Aktualisieren
+ *   - `store.retry()` ruft intern `resource.reload()`
  */
 @Component({
-  selector: 'lab-contacts-page',
+  // Eigener Selector: ohne ihn erzeugt Angular für beide (fast gleichen) Seiten dieselbe ID (NG0912).
+  selector: 'lab-contacts-resource-page',
   imports: [ContactForm, ContactList, ErrorDemoHints, ErrorState],
-  providers: [ContactStore],
+  providers: [ContactResourceStore],
   template: `
     <section class="card">
       <header class="head">
-        <h1>Kontakte <small>klassisch (rxMethod)</small></h1>
+        <h1>Kontakte <small>Resource API</small></h1>
         <p class="stats" data-testid="stats">{{ store.total() }} Kontakte, {{ store.favoriteCount() }} Favoriten</p>
       </header>
 
@@ -44,7 +38,7 @@ import { ErrorState } from '../ui/error-state';
         />
       </div>
 
-      @if (store.loadError(); as error) {
+      @if (store.error(); as error) {
         <lab-error-state
           title="Kontakte konnten nicht geladen werden"
           [error]="error"
@@ -55,7 +49,7 @@ import { ErrorState } from '../ui/error-state';
       }
 
       <div aria-live="polite">
-        @if (store.isLoading() && store.total() === 0) {
+        @if (store.isInitialLoading()) {
           <p class="hint">Lade Kontakte…</p>
         } @else if (store.isEmpty()) {
           <p class="hint">Keine Kontakte gefunden.</p>
@@ -75,9 +69,7 @@ import { ErrorState } from '../ui/error-state';
   `,
   styleUrl: './contacts-page.css',
 })
-export class ContactsPage {
-  protected readonly store = inject(ContactStore);
-
-  /** Pfeilfunktion, damit `this` gebunden bleibt, wenn das Formular sie aufruft. */
+export class ContactsResourcePage {
+  protected readonly store = inject(ContactResourceStore);
   protected readonly save = (contact: NewContact) => this.store.add(contact);
 }
